@@ -111,7 +111,7 @@ class Pbb_Desa_Admin {
 		    'order'   => 'ASC'
 		);
 		$users = get_users( $args );
-		$list = array();
+		$list = array('' => 'Pilih Petugas');
 		foreach ( $users as $user ) {
 		    $list[$user->ID] = esc_html( $user->display_name ) . ' (' . esc_html( $user->user_email ) . ')';
 		}
@@ -127,8 +127,10 @@ class Pbb_Desa_Admin {
 	        ->add_fields( array(
 	            Field::make( 'text', 'crb_pbb_nop', 'NOP (Nomor Object Pajak)' ),
 	            Field::make( 'text', 'crb_pbb_nama', 'Nama Wajib Pajak' ),
-	            Field::make( 'text', 'crb_pbb_alamat', 'Alamat' ),
+	            Field::make( 'textarea', 'crb_pbb_alamat', 'Alamat' ),
 	            Field::make( 'text', 'crb_pbb_nilai', 'Nilai Pajak' ),
+	            Field::make( 'select', 'crb_pbb_petugas_pajak', 'Petugas Pajak' )
+	            	->add_options(  $list )
 	        ) );
 	}
 
