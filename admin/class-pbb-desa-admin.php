@@ -125,12 +125,13 @@ class Pbb_Desa_Admin {
 	    Container::make( 'post_meta', __( 'Data PBB' ) )
 		    ->where( 'post_type', '=', 'wajib_pajak' )
 	        ->add_fields( array(
+	            Field::make( 'select', 'crb_pbb_petugas_pajak', 'Petugas Pajak' )
+	            	->add_options(  $list ),
 	            Field::make( 'text', 'crb_pbb_nop', 'NOP (Nomor Object Pajak)' ),
 	            Field::make( 'text', 'crb_pbb_nama', 'Nama Wajib Pajak' ),
 	            Field::make( 'textarea', 'crb_pbb_alamat', 'Alamat' ),
-	            Field::make( 'text', 'crb_pbb_nilai', 'Nilai Pajak' ),
-	            Field::make( 'select', 'crb_pbb_petugas_pajak', 'Petugas Pajak' )
-	            	->add_options(  $list )
+	            Field::make( 'map', 'crb_pbb_map', 'Map' ),
+	            Field::make( 'text', 'crb_pbb_nilai', 'Nilai Pajak' )
 	        ) );
 	}
 
