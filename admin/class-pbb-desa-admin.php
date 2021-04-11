@@ -20,6 +20,9 @@
  * @subpackage Pbb_Desa/admin
  * @author     Agus Nurwanto <agusnurwantomuslim@gmail.com>
  */
+use Carbon_Fields\Container;
+use Carbon_Fields\Field;
+
 class Pbb_Desa_Admin {
 
 	/**
@@ -98,6 +101,26 @@ class Pbb_Desa_Admin {
 
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/pbb-desa-admin.js', array( 'jquery' ), $this->version, false );
 
+	}
+
+	public function crb_attach_pbb_options(){
+		global $wpdb;
+		$args = array(
+		    'role'    => 'petugas_pajak',
+		    'orderby' => 'user_nicename',
+		    'order'   => 'ASC'
+		);
+		$users = get_users( $args );
+		$list = array();
+		foreach ( $users as $user ) {
+		    $list[$user->ID] = esc_html( $user->display_name ) . ' (' . esc_html( $user->user_email ) . ')';
+		}
+		$basic_options_container = Container::make( 'theme_options', __( 'PBB Options' ) )
+			->set_page_menu_position( 4 )
+	        ->add_fields( array(
+	            Field::make( 'select', 'crb_pbb_petugas_pajak', 'Pilih Petugas Pajak' )
+    				->add_options(  $list )
+	        ) );
 	}
 
 }

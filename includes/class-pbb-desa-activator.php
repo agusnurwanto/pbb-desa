@@ -30,7 +30,16 @@ class Pbb_Desa_Activator {
 	 * @since    1.0.0
 	 */
 	public static function activate() {
-
+		$role = get_role('petugas_pajak');
+		if ( empty($role) ) {
+		    $result = add_role( 
+				'petugas_pajak', 
+				__('Petugas Pajak' ),
+				array(
+					'read' => true, // true allows this capability
+				)
+			);
+		}
 	}
 
 }
