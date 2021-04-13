@@ -112,8 +112,10 @@ class Pbb_Desa_Admin {
 		);
 		$users = get_users( $args );
 		$list = array('' => 'Pilih Petugas');
+		$list_html = '<option value="">Pilih Petugas</option>';
 		foreach ( $users as $user ) {
 		    $list[$user->ID] = esc_html( $user->display_name ) . ' (' . esc_html( $user->user_email ) . ')';
+		    $list_html .= '<option value="'.$user->ID.'">'.$list[$user->ID].'</option>';
 		}
 		$basic_options_container = Container::make( 'theme_options', __( 'PBB Options' ) )
 			->set_page_menu_position( 4 )
@@ -121,6 +123,31 @@ class Pbb_Desa_Admin {
 	            Field::make( 'select', 'crb_pbb_petugas_pajak', 'Pilih Petugas Pajak' )
     				->add_options(  $list )
 	        ) );
+
+	    Container::make( 'theme_options', __( 'Pembayaran' ) )
+		    ->set_page_parent( $basic_options_container )
+		    ->add_fields( array(
+		        Field::make( 'html', 'crb_referensi_html' )
+	            	->set_html( 'Referensi: <a target="_blank" href="https://www.youtube.com/watch?v=UIGDx_6XRV8">https://www.youtube.com/watch?v=UIGDx_6XRV8</a>' ),
+		        Field::make( 'html', 'crb_petugas_html' )
+	            	->set_html( '<select id="petugas_pajak" class="cf-select__input">'.$list_html.'</select>' ),
+		        Field::make( 'html', 'crb_wp_html' )
+	            	->set_html( '
+	            	<table class="wp-list-table widefat fixed striped table-view-list">
+	            		<thead>
+	            			<tr>
+	            				<th><input type="checkbox"></th>
+	            				<th>No</th>
+	            				<th>No. Object Pajak</th>
+	            				<th>Nama Wajib Pajak</th>
+	            				<th>Alamat</th>
+	            				<th>Pajak</th>
+	            			</tr>
+	            		</thead>
+	            		<tbody>
+	            		</tbody>
+	            	</table>' )
+		    ) );
 
 	    Container::make( 'post_meta', __( 'Data PBB' ) )
 		    ->where( 'post_type', '=', 'wajib_pajak' )
@@ -133,6 +160,7 @@ class Pbb_Desa_Admin {
 	            Field::make( 'map', 'crb_pbb_map', 'Map' ),
 	            Field::make( 'text', 'crb_pbb_nilai', 'Nilai Pajak' )
 	        ) );
+
 	}
 
 	public function create_posttype_pbb(){
