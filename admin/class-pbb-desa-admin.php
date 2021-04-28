@@ -99,6 +99,8 @@ class Pbb_Desa_Admin {
 		 * class.
 		 */
 
+		wp_enqueue_script( $this->plugin_name.'jszip', plugin_dir_url( __FILE__ ) . 'js/jszip.js', array( 'jquery' ), $this->version, false );
+		wp_enqueue_script( $this->plugin_name.'xlsx', plugin_dir_url( __FILE__ ) . 'js/xlsx.js', array( 'jquery' ), $this->version, false );
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/pbb-desa-admin.js', array( 'jquery' ), $this->version, false );
 
 	}
@@ -147,6 +149,19 @@ class Pbb_Desa_Admin {
 	            		<tbody>
 	            		</tbody>
 	            	</table>' )
+		    ) );
+
+	    Container::make( 'theme_options', __( 'Import Wajib Pajak' ) )
+		    ->set_page_parent( $basic_options_container )
+		    ->add_fields( array(
+		        Field::make( 'html', 'crb_referensi_html' )
+	            	->set_html( 'Video Referensi: <a target="_blank" href="https://www.youtube.com/watch?v=UIGDx_6XRV8">https://www.youtube.com/watch?v=UIGDx_6XRV8</a>' ),
+		        Field::make( 'html', 'crb_upload_html' )
+	            	->set_html( 'Pilih file excel .xlsx : <input type="file" id="file-excel" onchange="filePicked(event);">' ),
+		        Field::make( 'html', 'crb_textarea_html' )
+	            	->set_html( 'Data JSON : <textarea id="data-excel" class="cf-select__input"></textarea>' ),
+		        Field::make( 'html', 'crb_save_button' )
+	            	->set_html( '<a onclick="import_excel(); return false" href="javascript:void(0);" class="button button-primary">Import WP</a>' )
 		    ) );
 
 	    Container::make( 'post_meta', __( 'Data PBB' ) )
