@@ -131,8 +131,10 @@ class Pbb_Desa_Admin {
 		    ->add_fields( array(
 		        Field::make( 'html', 'crb_referensi_html' )
 	            	->set_html( 'Referensi: <a target="_blank" href="https://www.youtube.com/watch?v=UIGDx_6XRV8">https://www.youtube.com/watch?v=UIGDx_6XRV8</a>' ),
+		        Field::make( 'html', 'crb_pilih_tahun_html' )
+	            	->set_html( 'Tahun Anggaran : <input type="number" id="tahun_anggaran" value="'.date('Y').'">' ),
 		        Field::make( 'html', 'crb_petugas_html' )
-	            	->set_html( '<select id="petugas_pajak" class="cf-select__input">'.$list_html.'</select>' ),
+	            	->set_html( '<select id="petugas_pajak_bayar" class="cf-select__input">'.$list_html.'</select>' ),
 		        Field::make( 'html', 'crb_wp_html' )
 	            	->set_html( '
 	            	<table class="wp-list-table widefat fixed striped table-view-list">
@@ -156,6 +158,10 @@ class Pbb_Desa_Admin {
 		    ->add_fields( array(
 		        Field::make( 'html', 'crb_referensi_html' )
 	            	->set_html( 'Video Referensi: <a target="_blank" href="https://www.youtube.com/watch?v=UIGDx_6XRV8">https://www.youtube.com/watch?v=UIGDx_6XRV8</a>' ),
+		        Field::make( 'html', 'crb_pilih_tahun_html' )
+	            	->set_html( 'Tahun Anggaran : <input type="number" id="tahun_anggaran" value="'.date('Y').'">' ),
+		        Field::make( 'html', 'crb_petugas_html' )
+	            	->set_html( 'Pilih Petugas Pajak : <select id="petugas_pajak" class="cf-select__input">'.$list_html.'</select>' ),
 		        Field::make( 'html', 'crb_upload_html' )
 	            	->set_html( 'Pilih file excel .xlsx : <input type="file" id="file-excel" onchange="filePicked(event);">' ),
 		        Field::make( 'html', 'crb_textarea_html' )
@@ -167,13 +173,22 @@ class Pbb_Desa_Admin {
 	    Container::make( 'post_meta', __( 'Data PBB' ) )
 		    ->where( 'post_type', '=', 'wajib_pajak' )
 	        ->add_fields( array(
+	            Field::make( 'text', 'crb_pbb_tahun_anggaran', 'Tahun Anggaran' ),
 	            Field::make( 'select', 'crb_pbb_petugas_pajak', 'Petugas Pajak' )
 	            	->add_options(  $list ),
 	            Field::make( 'text', 'crb_pbb_nop', 'NOP (Nomor Object Pajak)' ),
-	            Field::make( 'text', 'crb_pbb_nama', 'Nama Wajib Pajak' ),
-	            Field::make( 'textarea', 'crb_pbb_alamat', 'Alamat' ),
-	            Field::make( 'map', 'crb_pbb_map', 'Map' ),
-	            Field::make( 'text', 'crb_pbb_nilai', 'Nilai Pajak' )
+	            Field::make( 'text', 'crb_pbb_ketetapan_pbb', 'Nilai Pajak' ),
+	            Field::make( 'text', 'crb_pbb_prop', 'Nomor PROP' ),
+	            Field::make( 'text', 'crb_pbb_dat', 'Nomor DAT' ),
+	            Field::make( 'text', 'crb_pbb_kec', 'Nomor KEC' ),
+	            Field::make( 'text', 'crb_pbb_kel', 'Nomor KEL' ),
+	            Field::make( 'text', 'crb_pbb_blok', 'Nomor BLOK' ),
+	            Field::make( 'text', 'crb_pbb_urut', 'Nomor URUT' ),
+	            Field::make( 'text', 'crb_pbb_jns', 'Nomor JNS' ),
+	            Field::make( 'text', 'crb_pbb_nama_wp', 'Nama Wajib Pajak' ),
+	            Field::make( 'textarea', 'crb_pbb_alamat_wp', 'Alamat Wajib Pajak' ),
+	            Field::make( 'textarea', 'crb_pbb_alamat_op', 'Alamat Objek Pajak' ),
+	            Field::make( 'map', 'crb_pbb_map_op', 'Map' )
 	        ) );
 
 	}
@@ -193,4 +208,95 @@ class Pbb_Desa_Admin {
 	    );
 	}
 
+	public function import_excel(){
+		global $wpdb;
+		$ret = array(
+			'status'	=> 'success',
+			'message'	=> 'Berhasil import excel!'
+		);
+		if (!empty($_POST)) {
+			$ret['data'] = array();
+			foreach ($_POST['data'] as $k => $data) {
+				$nop = $data['PROP'].'.'.$data['DAT'].'.'.$data['KEC'].'.'.$data['KEL'].'.'.$data['BLOK'].'.'.$data['URUT'].'.'.$data['JNS'];
+				$nama_post = $_POST['tahun_anggaran'].' | '.$nop.' | '.$data['NAMA_WP'];
+				$custom_post = get_page_by_title($nama_post, OBJECT, 'wajib_pajak');
+				$_post = array(
+					'post_title'	=> $nama_post,
+					'post_content'	=> '[tampilpbb nop="'.$nop.'" tahun_anggaran="'.$_POST['tahun_anggaran'].'"]',
+					'post_type'		=> 'wajib_pajak',
+					'post_status'	=> 'private',
+					'comment_status'	=> 'closed'
+				);
+				if (empty($custom_post) || empty($custom_post->ID)) {
+					wp_insert_post($_post);
+					$_post['status'] = 'insert';
+				}else{
+					$_post['ID'] = $custom_post->ID;
+					wp_update_post( $_post );
+					$_post['status'] = 'update';
+				}
+				$ret['data'][] = $_post;
+				$custom_post = get_page_by_title($nama_post, OBJECT, 'wajib_pajak');
+				update_post_meta( $custom_post->ID, '_crb_pbb_nop', $nop );
+				update_post_meta( $custom_post->ID, '_crb_pbb_prop', $data['PROP'] );
+				update_post_meta( $custom_post->ID, '_crb_pbb_dat', $data['DAT'] );
+				update_post_meta( $custom_post->ID, '_crb_pbb_kec', $data['KEC'] );
+				update_post_meta( $custom_post->ID, '_crb_pbb_kel', $data['KEL'] );
+				update_post_meta( $custom_post->ID, '_crb_pbb_blok', $data['BLOK'] );
+				update_post_meta( $custom_post->ID, '_crb_pbb_urut', $data['URUT'] );
+				update_post_meta( $custom_post->ID, '_crb_pbb_jns', $data['JNS'] );
+				update_post_meta( $custom_post->ID, '_crb_pbb_nama_wp', $data['NAMA_WP'] );
+				update_post_meta( $custom_post->ID, '_crb_pbb_alamat_wp', $data['ALAMAT_WP'] );
+				update_post_meta( $custom_post->ID, '_crb_pbb_alamat_op', $data['ALAMAT_OP'] );
+				update_post_meta( $custom_post->ID, '_crb_pbb_ketetapan_pbb', $data['KETETAPAN_PBB'] );
+				update_post_meta( $custom_post->ID, '_crb_pbb_tahun_anggaran', $_POST['tahun_anggaran'] );
+				update_post_meta( $custom_post->ID, '_crb_pbb_petugas_pajak', $_POST['petugas_pajak'] );
+
+				// update astra theme
+				update_post_meta($custom_post->ID, 'ast-breadcrumbs-content', 'disabled');
+				update_post_meta($custom_post->ID, 'ast-featured-img', 'disabled');
+				update_post_meta($custom_post->ID, 'ast-main-header-display', 'disabled');
+				update_post_meta($custom_post->ID, 'footer-sml-layout', 'disabled');
+				update_post_meta($custom_post->ID, 'site-content-layout', 'page-builder');
+				update_post_meta($custom_post->ID, 'site-post-title', 'disabled');
+				update_post_meta($custom_post->ID, 'site-sidebar-layout', 'no-sidebar');
+				update_post_meta($custom_post->ID, 'theme-transparent-header-meta', 'disabled');
+			}
+		} else {
+			$ret['status'] = 'error';
+			$ret['message'] = 'Format Salah!';
+		}
+		die(json_encode($ret));
+	}
+
+	function get_wajib_pajak(){
+		global $wpdb;
+		$ret = array(
+			'status'	=> 'success',
+			'message'	=> 'Berhasil get wajib pajak!'
+		);
+		if (!empty($_POST)) {
+			$posts = get_posts(array( 
+				'post_type' => 'wajib_pajak', 
+				'meta_query' => array(
+			        array(
+			            'key'   => '_crb_pbb_petugas_pajak',
+			            'value' => $_POST['petugas_pajak'],
+			        ),
+			        array(
+			            'key'   => '_crb_pbb_tahun_anggaran',
+			            'value' => $_POST['tahun_anggaran']
+			        ),
+        			'relation' => 'AND'
+			    )
+			));
+			print_r($posts); die('tes');  
+			foreach ( $posts as $post ) {
+		    }
+		} else {
+			$ret['status'] = 'error';
+			$ret['message'] = 'Format Salah!';
+		}
+		die(json_encode($ret));
+	}
 }

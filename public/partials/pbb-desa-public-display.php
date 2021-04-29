@@ -1,16 +1,12 @@
 <?php
+$input = shortcode_atts( array(
+	'nop' => '',
+	'tahun_anggaran' => '2021'
+), $atts );
+global $wpdb;
 
-/**
- * Provide a public-facing view for the plugin
- *
- * This file is used to markup the public-facing aspects of the plugin.
- *
- * @link       https://github.com/agusnurwanto
- * @since      1.0.0
- *
- * @package    Pbb_Desa
- * @subpackage Pbb_Desa/public/partials
- */
-?>
+if(empty($input['nop'])){
+	echo "<h1 style='text-align: center;'>NOP tidak boleh kosong!</h1>"; exit;
+}
 
-<!-- This file should primarily consist of HTML with a little bit of PHP. -->
+echo "<h1 style='text-align: center;'>NOP : ".$input['nop']."</h1>";
