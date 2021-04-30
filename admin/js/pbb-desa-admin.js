@@ -32,7 +32,7 @@ jQuery(document).ready(function(){
                         data_wp += ''
                             +'<tr>'
                                 +'<td><input type="checkbox" data-post-id="'+b.post_id+'"></td>'
-                                +'<td>'+(i+1)+'</td>'
+                                +'<td style="text-align: right;">'+(i+1)+'</td>'
                                 +'<td>'+b.crb_pbb_nop+'</td>'
                                 +'<td>'+b.crb_pbb_nama_wp+'</td>'
                                 +'<td>'+b.crb_pbb_alamat_op+'</td>'
@@ -99,7 +99,7 @@ function import_excel(){
 
         var data_all = [];
         var data_sementara = [];
-        var max = 500;
+        var max = 50;
         data.map(function(b, i){
             data_sementara.push(b);
             if(data_sementara.length%max == 0){

@@ -141,7 +141,7 @@ class Pbb_Desa_Admin {
 	            		<thead>
 	            			<tr>
 	            				<th style="width: 20px;"><input type="checkbox" id="select-all" style="margin:0;"></th>
-	            				<th style="width: 20px;">No</th>
+	            				<th style="width: 30px;">No</th>
 	            				<th style="width: 170px;">No. Object Pajak</th>
 	            				<th style="width: 200px;">Nama Wajib Pajak</th>
 	            				<th>Alamat</th>
@@ -280,6 +280,9 @@ class Pbb_Desa_Admin {
 		);
 		if (!empty($_POST)) {
 			$posts = get_posts(array( 
+				'numberposts'	=> -1,
+				// 'posts_per_page'	=> 500,
+    //     		'offset'	=> 1,
 				'post_type' => 'wajib_pajak', 
 				'meta_query' => array(
 			        array(
@@ -296,12 +299,16 @@ class Pbb_Desa_Admin {
 			));
 			$data_all = array();
 			foreach ( $posts as $post ) {
+				$nilai = carbon_get_post_meta( $post->ID, 'crb_pbb_ketetapan_pbb' );
+				if(empty($nilai)){
+					$nilai = 0;
+				}
 				$data_all[] = array(
 					'post_id' => $post->ID,
 					'crb_pbb_nop'	=> carbon_get_post_meta( $post->ID, 'crb_pbb_nop' ),
 					'crb_pbb_nama_wp'	=> carbon_get_post_meta( $post->ID, 'crb_pbb_nama_wp' ),
 					'crb_pbb_alamat_op'	=> carbon_get_post_meta( $post->ID, 'crb_pbb_alamat_op' ),
-					'crb_pbb_ketetapan_pbb'	=> carbon_get_post_meta( $post->ID, 'crb_pbb_ketetapan_pbb' )
+					'crb_pbb_ketetapan_pbb'	=> 'Rp '.number_format($nilai,0,",",".")
 				);
 		    }
 		    $ret['data'] = $data_all;
