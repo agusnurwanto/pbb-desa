@@ -29,6 +29,10 @@ jQuery(document).ready(function(){
                     +'</tr>';
                 if(res.status == 'success'){
                     res.data.map(function(b, i){
+                        var status = '<span style="color: red;">Belum Bayar</span>';
+                        if(b.crb_pbb_status_bayar == 1){
+                            status = '<span style="color: green;">Terbayar</span>';
+                        }
                         data_wp += ''
                             +'<tr>'
                                 +'<td><input type="checkbox" data-post-id="'+b.post_id+'"></td>'
@@ -36,6 +40,7 @@ jQuery(document).ready(function(){
                                 +'<td>'+b.crb_pbb_nop+'</td>'
                                 +'<td>'+b.crb_pbb_nama_wp+'</td>'
                                 +'<td>'+b.crb_pbb_alamat_op+'</td>'
+                                +'<td style="width: 100px;">'+status+'</td>'
                                 +'<td>'+b.crb_pbb_ketetapan_pbb+'</td>'
                             +'</tr>';
                     });
@@ -146,6 +151,39 @@ function import_excel(){
             console.log(e);
             jQuery('#wrap-loading').hide();
             alert('Error!');
+        });
+    }
+}
+
+function bayar_pajak(){
+    var status = jQuery('#status_bayar').val();
+    var data_id_post = [];
+    jQuery('#table-pembayaran-pbb tbody tr').map(function(i, b){
+        var tr = jQuery(b);
+        var checkbox = tr.find('td input[type="checkbox"]');
+        var cek = checkbox.is(':checked');
+        if(cek){
+            var id = checkbox.attr('data-post-id');
+            data_id_post.push(id);
+        }
+    });
+    if(data_id_post.length == 0){
+        alert('Pilih wajib pajak dulu!');
+    }else{
+        jQuery('#wrap-loading').show();
+        jQuery.ajax({
+            url: ajaxurl,
+            type: 'post',
+            data: {
+                action: 'ubah_status_pajak',
+                data: data_id_post,
+                status: status
+            },
+            success: function(res){
+                jQuery('#wrap-loading').hide();
+                res = JSON.parse(res);
+                jQuery('#petugas_pajak_bayar').trigger('change');
+            }
         });
     }
 }

@@ -134,7 +134,17 @@ class Pbb_Desa_Admin {
 		        Field::make( 'html', 'crb_pilih_tahun_html' )
 	            	->set_html( 'Tahun Anggaran : <input type="number" id="tahun_anggaran" value="'.date('Y').'">' ),
 		        Field::make( 'html', 'crb_petugas_html' )
-	            	->set_html( '<select id="petugas_pajak_bayar" class="cf-select__input">'.$list_html.'</select>' ),
+	            	->set_html( 'Pilih Petugas Pajak : <select id="petugas_pajak_bayar" class="cf-select__input">'.$list_html.'</select>' ),
+		        Field::make( 'html', 'crb_status_bayar_html' )
+	            	->set_html( '
+	            		Ubah status bayar : 
+	            		<select id="status_bayar" class="cf-select__input" style="margin-bottom: 10px;">
+	            			<option value="">Pilih Status</option>
+	            			<option value="1">Terbayar</option>
+	            			<option value="0">Belum Bayar</option>
+	            		</select>
+		            	<a onclick="bayar_pajak(); return false" href="javascript:void(0);" class="button button-primary">Simpan Status Pajak</a>
+	            ' ),
 		        Field::make( 'html', 'crb_wp_html' )
 	            	->set_html( '
 	            	<table id="table-pembayaran-pbb" class="wp-list-table widefat fixed striped table-view-list">
@@ -145,6 +155,7 @@ class Pbb_Desa_Admin {
 	            				<th style="width: 170px;">No. Object Pajak</th>
 	            				<th style="width: 200px;">Nama Wajib Pajak</th>
 	            				<th>Alamat</th>
+	            				<th>Status</th>
 	            				<th style="width: 100px;">Pajak</th>
 	            			</tr>
 	            		</thead>
@@ -280,9 +291,9 @@ class Pbb_Desa_Admin {
 		);
 		if (!empty($_POST)) {
 			$posts = get_posts(array( 
-				'numberposts'	=> -1,
-				// 'posts_per_page'	=> 500,
-    //     		'offset'	=> 1,
+				// 'numberposts'	=> -1,
+				'posts_per_page'	=> 50,
+        		'offset'	=> 1,
 				'post_type' => 'wajib_pajak', 
 				'meta_query' => array(
 			        array(
@@ -303,15 +314,34 @@ class Pbb_Desa_Admin {
 				if(empty($nilai)){
 					$nilai = 0;
 				}
+				$status = get_post_meta( $post->ID, '_crb_pbb_status_bayar');
 				$data_all[] = array(
 					'post_id' => $post->ID,
 					'crb_pbb_nop'	=> carbon_get_post_meta( $post->ID, 'crb_pbb_nop' ),
 					'crb_pbb_nama_wp'	=> carbon_get_post_meta( $post->ID, 'crb_pbb_nama_wp' ),
 					'crb_pbb_alamat_op'	=> carbon_get_post_meta( $post->ID, 'crb_pbb_alamat_op' ),
+					'crb_pbb_status_bayar'	=> $status[0],
 					'crb_pbb_ketetapan_pbb'	=> 'Rp '.number_format($nilai,0,",",".")
 				);
 		    }
 		    $ret['data'] = $data_all;
+		} else {
+			$ret['status'] = 'error';
+			$ret['message'] = 'Format Salah!';
+		}
+		die(json_encode($ret));
+	}
+
+	function ubah_status_pajak(){
+		global $wpdb;
+		$ret = array(
+			'status'	=> 'success',
+			'message'	=> 'Berhasil ubah status wajib pajak!'
+		);
+		if (!empty($_POST)) {
+			foreach ($_POST['data'] as $k => $post_id) {
+				update_post_meta( $post_id, '_crb_pbb_status_bayar', $_POST['status'] );
+			}
 		} else {
 			$ret['status'] = 'error';
 			$ret['message'] = 'Format Salah!';
