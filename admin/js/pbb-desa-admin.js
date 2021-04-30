@@ -21,7 +21,32 @@ jQuery(document).ready(function(){
                 petugas_pajak: petugas_pajak
             },
             success: function(res){
-                console.log('res', res);
+                res = JSON.parse(res);
+                var data_wp = '';
+                var data_wp_kosong = ''
+                    +'<tr>'
+                        +'<td colspan="6" style="text-align: center;">Data Kosong!</td>'
+                    +'</tr>';
+                if(res.status == 'success'){
+                    res.data.map(function(b, i){
+                        data_wp += ''
+                            +'<tr>'
+                                +'<td><input type="checkbox" data-post-id="'+b.post_id+'"></td>'
+                                +'<td>'+(i+1)+'</td>'
+                                +'<td>'+b.crb_pbb_nop+'</td>'
+                                +'<td>'+b.crb_pbb_nama_wp+'</td>'
+                                +'<td>'+b.crb_pbb_alamat_op+'</td>'
+                                +'<td>'+b.crb_pbb_ketetapan_pbb+'</td>'
+                            +'</tr>';
+                    });
+                    if(data_wp == ''){
+                        data_wp += data_wp_kosong;
+                    }
+                }else{
+                    data_wp += data_wp_kosong;
+                    alert(res.message);
+                }
+                jQuery('#table-pembayaran-pbb tbody').html(data_wp);
                 jQuery('#wrap-loading').hide();
             }
         });

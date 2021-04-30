@@ -137,18 +137,21 @@ class Pbb_Desa_Admin {
 	            	->set_html( '<select id="petugas_pajak_bayar" class="cf-select__input">'.$list_html.'</select>' ),
 		        Field::make( 'html', 'crb_wp_html' )
 	            	->set_html( '
-	            	<table class="wp-list-table widefat fixed striped table-view-list">
+	            	<table id="table-pembayaran-pbb" class="wp-list-table widefat fixed striped table-view-list">
 	            		<thead>
 	            			<tr>
-	            				<th><input type="checkbox"></th>
-	            				<th>No</th>
-	            				<th>No. Object Pajak</th>
-	            				<th>Nama Wajib Pajak</th>
+	            				<th style="width: 20px;"><input type="checkbox" id="select-all" style="margin:0;"></th>
+	            				<th style="width: 20px;">No</th>
+	            				<th style="width: 170px;">No. Object Pajak</th>
+	            				<th style="width: 200px;">Nama Wajib Pajak</th>
 	            				<th>Alamat</th>
-	            				<th>Pajak</th>
+	            				<th style="width: 100px;">Pajak</th>
 	            			</tr>
 	            		</thead>
 	            		<tbody>
+	            			<tr>
+	            				<td colspan="6" style="text-align: center;">Data Kosong!</td>
+	            			</tr>
 	            		</tbody>
 	            	</table>' )
 		    ) );
@@ -288,11 +291,20 @@ class Pbb_Desa_Admin {
 			            'value' => $_POST['tahun_anggaran']
 			        ),
         			'relation' => 'AND'
-			    )
+			    ),
+			    'post_status' => 'private'
 			));
-			print_r($posts); die('tes');  
+			$data_all = array();
 			foreach ( $posts as $post ) {
+				$data_all[] = array(
+					'post_id' => $post->ID,
+					'crb_pbb_nop'	=> carbon_get_post_meta( $post->ID, 'crb_pbb_nop' ),
+					'crb_pbb_nama_wp'	=> carbon_get_post_meta( $post->ID, 'crb_pbb_nama_wp' ),
+					'crb_pbb_alamat_op'	=> carbon_get_post_meta( $post->ID, 'crb_pbb_alamat_op' ),
+					'crb_pbb_ketetapan_pbb'	=> carbon_get_post_meta( $post->ID, 'crb_pbb_ketetapan_pbb' )
+				);
 		    }
+		    $ret['data'] = $data_all;
 		} else {
 			$ret['status'] = 'error';
 			$ret['message'] = 'Format Salah!';
