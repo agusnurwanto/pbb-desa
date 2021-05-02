@@ -4,5 +4,19 @@ $input = shortcode_atts( array(
 ), $atts );
 global $wpdb;
 
+?>
 
-echo "<h1 style='text-align: center;'>Tahun Anggaran : ".$input['tahun_anggaran']."</h1>";
+<h1 style='text-align: center;'>DAFTAR NAMA PELUNASAN PBB TAHUN <?php echo $input['tahun_anggaran']; ?></h1>
+<table>
+	<thead>
+		<tr>
+			<th>No.</th>
+			<th>NOP</th>
+			<th>Nama Wajib Pajak</th>
+			<th>Alamat Objek Pajak</th>
+			<th>Bayar</th>
+			<th>Tgl. Lunas</th>
+		</tr>
+	</thead>
+	<tbody></tbody>
+</table>
