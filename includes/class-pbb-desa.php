@@ -161,7 +161,8 @@ class Pbb_Desa {
 		$this->loader->add_action('wp_ajax_import_excel',  $plugin_admin, 'import_excel');
 		$this->loader->add_action('wp_ajax_get_wajib_pajak',  $plugin_admin, 'get_wajib_pajak');
 		$this->loader->add_action('wp_ajax_ubah_status_pajak',  $plugin_admin, 'ubah_status_pajak');
-
+		$this->loader->add_action('wp_ajax_get_url_print_pbb',  $plugin_admin, 'get_url_print_pbb');
+		add_shortcode('printpbb', array($plugin_admin, 'printpbb'));
 	}
 
 	/**

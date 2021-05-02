@@ -107,6 +107,7 @@ class Pbb_Desa_Admin {
 
 	public function crb_attach_pbb_options(){
 		global $wpdb;
+
 		$args = array(
 		    'role'    => 'petugas_pajak',
 		    'orderby' => 'user_nicename',
@@ -134,17 +135,20 @@ class Pbb_Desa_Admin {
 		        Field::make( 'html', 'crb_pilih_tahun_html' )
 	            	->set_html( 'Tahun Anggaran : <input type="number" id="tahun_anggaran" value="'.date('Y').'">' ),
 		        Field::make( 'html', 'crb_petugas_html' )
-	            	->set_html( 'Pilih Petugas Pajak : <select id="petugas_pajak_bayar" class="cf-select__input">'.$list_html.'</select>' ),
+	            	->set_html( 'Pilih Petugas Pajak : <select id="petugas_pajak_bayar" style="min-width: 250px;">'.$list_html.'</select>' ),
 		        Field::make( 'html', 'crb_status_bayar_html' )
 	            	->set_html( '
 	            		Ubah status bayar : 
-	            		<select id="status_bayar" class="cf-select__input" style="margin-bottom: 10px;">
+	            		<select id="status_bayar" style="min-width: 250px;">
 	            			<option value="">Pilih Status</option>
 	            			<option value="1">Terbayar</option>
 	            			<option value="0">Belum Bayar</option>
 	            		</select>
-		            	<a onclick="bayar_pajak(); return false" href="javascript:void(0);" class="button button-primary">Simpan Status Pajak</a>
 	            ' ),
+		        Field::make( 'html', 'crb_aksi_html' )
+	            	->set_html( '
+	            		<a onclick="bayar_pajak(); return false" href="javascript:void(0);" class="button button-primary">Simpan Status Pajak</a>
+	            		<a onclick="print_pajak(); return false" href="javascript:void(0);" class="button button-secondary">Print Laporan Pajak</a>' ),
 		        Field::make( 'html', 'crb_wp_html' )
 	            	->set_html( '
 	            	<table id="table-pembayaran-pbb" class="wp-list-table widefat fixed striped table-view-list">
@@ -175,9 +179,9 @@ class Pbb_Desa_Admin {
 		        Field::make( 'html', 'crb_pilih_tahun_html' )
 	            	->set_html( 'Tahun Anggaran : <input type="number" id="tahun_anggaran" value="'.date('Y').'">' ),
 		        Field::make( 'html', 'crb_petugas_html' )
-	            	->set_html( 'Pilih Petugas Pajak : <select id="petugas_pajak" class="cf-select__input">'.$list_html.'</select>' ),
+	            	->set_html( 'Pilih Petugas Pajak : <select id="petugas_pajak" style="min-width: 250px;">'.$list_html.'</select>' ),
 		        Field::make( 'html', 'crb_upload_html' )
-	            	->set_html( 'Pilih file excel .xlsx : <input type="file" id="file-excel" onchange="filePicked(event);">' ),
+	            	->set_html( 'Pilih file excel .xlsx : <input type="file" id="file-excel" onchange="filePicked(event);"><br>Contoh format file excel bisa <a target="_blank" href="'.plugin_dir_url( __FILE__ ) . 'excel/contoh.xlsx">download di sini</a>.' ),
 		        Field::make( 'html', 'crb_textarea_html' )
 	            	->set_html( 'Data JSON : <textarea id="data-excel" class="cf-select__input"></textarea>' ),
 		        Field::make( 'html', 'crb_save_button' )
@@ -187,6 +191,12 @@ class Pbb_Desa_Admin {
 	    Container::make( 'post_meta', __( 'Data PBB' ) )
 		    ->where( 'post_type', '=', 'wajib_pajak' )
 	        ->add_fields( array(
+	            Field::make( 'select', 'crb_pbb_status_bayar', 'Status Pembayaran' )
+	            	->add_options(  array(
+	            		'' => 'Pilih Status Pembayaran',
+	            		'1' => 'Terbayar',
+	            		'0' => 'Belum Bayar'
+	            	) ),
 	            Field::make( 'text', 'crb_pbb_tahun_anggaran', 'Tahun Anggaran' ),
 	            Field::make( 'select', 'crb_pbb_petugas_pajak', 'Petugas Pajak' )
 	            	->add_options(  $list ),
@@ -291,9 +301,9 @@ class Pbb_Desa_Admin {
 		);
 		if (!empty($_POST)) {
 			$posts = get_posts(array( 
-				// 'numberposts'	=> -1,
-				'posts_per_page'	=> 50,
-        		'offset'	=> 1,
+				'numberposts'	=> -1,
+				// 'posts_per_page'	=> 50,
+        		// 'offset'	=> 0,
 				'post_type' => 'wajib_pajak', 
 				'meta_query' => array(
 			        array(
@@ -347,5 +357,56 @@ class Pbb_Desa_Admin {
 			$ret['message'] = 'Format Salah!';
 		}
 		die(json_encode($ret));
+	}
+
+	function get_url_print_pbb(){
+		global $wpdb;
+		$ret = array(
+			'status'	=> 'success',
+			'message'	=> 'Berhasil ubah status wajib pajak!'
+		);
+		if (!empty($_POST)) {
+			$nama_post = 'Print PBB Desa '.$_POST['tahun_anggaran'];
+			$custom_post = get_page_by_title($nama_post, OBJECT, 'page');
+			$_post = array(
+				'post_title'	=> $nama_post,
+				'post_content'	=> '[printpbb tahun_anggaran='.$_POST['tahun_anggaran'].']',
+				'post_type'		=> 'page',
+				'post_status'	=> 'private',
+				'comment_status'	=> 'closed'
+			);
+			if (empty($custom_post) || empty($custom_post->ID)) {
+				wp_insert_post($_post);
+			}else{
+				$_post['ID'] = $custom_post->ID;
+				wp_update_post( $_post );
+			}
+
+			$custom_post = get_page_by_title($nama_post, OBJECT, 'page');
+			// update astra theme
+			update_post_meta($custom_post->ID, 'ast-breadcrumbs-content', 'disabled');
+			update_post_meta($custom_post->ID, 'ast-featured-img', 'disabled');
+			update_post_meta($custom_post->ID, 'ast-main-header-display', 'disabled');
+			update_post_meta($custom_post->ID, 'footer-sml-layout', 'disabled');
+			update_post_meta($custom_post->ID, 'site-content-layout', 'page-builder');
+			update_post_meta($custom_post->ID, 'site-post-title', 'disabled');
+			update_post_meta($custom_post->ID, 'site-sidebar-layout', 'no-sidebar');
+			update_post_meta($custom_post->ID, 'theme-transparent-header-meta', 'disabled');
+
+			$ret['url'] = esc_url( get_page_link( $custom_post->ID ) );
+		} else {
+			$ret['status'] = 'error';
+			$ret['message'] = 'Format Salah!';
+		}
+		die(json_encode($ret));
+	}
+
+	public function printpbb($atts)
+	{
+		// untuk disable render shortcode di halaman edit page/post
+		if(!empty($_GET) && !empty($_GET['post'])){
+			return '';
+		}
+		require_once plugin_dir_path(dirname(__FILE__)) . 'admin/partials/pbb-desa-admin-display.php';
 	}
 }

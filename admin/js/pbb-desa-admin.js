@@ -10,6 +10,7 @@ jQuery(document).ready(function(){
 
     jQuery('#petugas_pajak_bayar').on('change', function(){
         jQuery('#wrap-loading').show();
+        get_data_list();
         var tahun_anggaran = jQuery('#tahun_anggaran').val();
         var petugas_pajak = jQuery(this).val();
         jQuery.ajax({
@@ -33,9 +34,17 @@ jQuery(document).ready(function(){
                         if(b.crb_pbb_status_bayar == 1){
                             status = '<span style="color: green;">Terbayar</span>';
                         }
+                        var checked = '';
+                        if(typeof data_id_post != 'undefined'){
+                            data_id_post.map(function(m, n){
+                                if(m == b.post_id){
+                                    checked = 'checked';
+                                }
+                            });
+                        }
                         data_wp += ''
                             +'<tr>'
-                                +'<td><input type="checkbox" data-post-id="'+b.post_id+'"></td>'
+                                +'<td><input type="checkbox" data-post-id="'+b.post_id+'" '+checked+'></td>'
                                 +'<td style="text-align: right;">'+(i+1)+'</td>'
                                 +'<td>'+b.crb_pbb_nop+'</td>'
                                 +'<td>'+b.crb_pbb_nama_wp+'</td>'
@@ -157,18 +166,11 @@ function import_excel(){
 
 function bayar_pajak(){
     var status = jQuery('#status_bayar').val();
-    var data_id_post = [];
-    jQuery('#table-pembayaran-pbb tbody tr').map(function(i, b){
-        var tr = jQuery(b);
-        var checkbox = tr.find('td input[type="checkbox"]');
-        var cek = checkbox.is(':checked');
-        if(cek){
-            var id = checkbox.attr('data-post-id');
-            data_id_post.push(id);
-        }
-    });
+    get_data_list();
     if(data_id_post.length == 0){
         alert('Pilih wajib pajak dulu!');
+    }else if(status == ''){
+        alert('Pilih status pembayaran dulu!');
     }else{
         jQuery('#wrap-loading').show();
         jQuery.ajax({
@@ -183,6 +185,42 @@ function bayar_pajak(){
                 jQuery('#wrap-loading').hide();
                 res = JSON.parse(res);
                 jQuery('#petugas_pajak_bayar').trigger('change');
+            }
+        });
+    }
+}
+
+function get_data_list(){
+    window.data_id_post = [];
+    jQuery('#table-pembayaran-pbb tbody tr').map(function(i, b){
+        var tr = jQuery(b);
+        var checkbox = tr.find('td input[type="checkbox"]');
+        var cek = checkbox.is(':checked');
+        if(cek){
+            var id = checkbox.attr('data-post-id');
+            data_id_post.push(id);
+        }
+    });
+}
+
+function print_pajak(){
+    var tahun_anggaran = jQuery('#tahun_anggaran').val();
+    get_data_list();
+    if(data_id_post.length == 0){
+        alert('Pilih wajib pajak dulu!');
+    }else{
+        jQuery('#wrap-loading').show();
+        jQuery.ajax({
+            url: ajaxurl,
+            type: 'post',
+            data: {
+                action: 'get_url_print_pbb',
+                tahun_anggaran: tahun_anggaran
+            },
+            success: function(res){
+                jQuery('#wrap-loading').hide();
+                res = JSON.parse(res);
+                window.open(res.url+'?data_list='+data_id_post.join(','), '_blank').focus();
             }
         });
     }

@@ -1,16 +1,8 @@
 <?php
+$input = shortcode_atts( array(
+	'tahun_anggaran' => '2021'
+), $atts );
+global $wpdb;
 
-/**
- * Provide a admin area view for the plugin
- *
- * This file is used to markup the admin-facing aspects of the plugin.
- *
- * @link       https://github.com/agusnurwanto
- * @since      1.0.0
- *
- * @package    Pbb_Desa
- * @subpackage Pbb_Desa/admin/partials
- */
-?>
 
-<!-- This file should primarily consist of HTML with a little bit of PHP. -->
+echo "<h1 style='text-align: center;'>Tahun Anggaran : ".$input['tahun_anggaran']."</h1>";
