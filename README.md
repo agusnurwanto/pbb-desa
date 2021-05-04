@@ -8,7 +8,6 @@ Semoga bermanfaat
 ### Cara pakai plugin:
 - Install wordpress
 - Install plugin ini dan aktifkan
-- Import SQL file tabel.sql untuk membuat tabel tempat menyimpan data PBB
 
 
 Permintaan fitur:
@@ -18,7 +17,7 @@ Permintaan fitur:
 - ...
 
 ### HARUS Update php.ini
-Optimasi server apache agar proses pengiriman data dari chrome extension ke server wordpress berjalan lancar (edit file php.ini):
+Optimasi server apache agar proses import data wajib pajak dari excel berjalan lancar (edit file php.ini):
 - max_input_vars = 1000000
 - max_execution_time = 300
 - max_input_time = 600

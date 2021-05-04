@@ -31,9 +31,11 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 // ============== https://carbonfields.net/ ================
-define( 'Carbon_Fields_Plugin\PLUGIN_FILE', __FILE__ );
+if(!defined('Carbon_Fields_Plugin\PLUGIN_FILE')){
+	define( 'Carbon_Fields_Plugin\PLUGIN_FILE', __FILE__ );
 
-define( 'Carbon_Fields_Plugin\RELATIVE_PLUGIN_FILE', basename( dirname( \Carbon_Fields_Plugin\PLUGIN_FILE ) ) . '/' . basename( \Carbon_Fields_Plugin\PLUGIN_FILE ) );
+	define( 'Carbon_Fields_Plugin\RELATIVE_PLUGIN_FILE', basename( dirname( \Carbon_Fields_Plugin\PLUGIN_FILE ) ) . '/' . basename( \Carbon_Fields_Plugin\PLUGIN_FILE ) );
+}
 
 add_action( 'after_setup_theme', 'carbon_fields_boot_plugin' );
 if(!function_exists('carbon_fields_boot_plugin')){
