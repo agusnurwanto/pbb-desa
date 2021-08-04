@@ -1,4 +1,20 @@
-/**
- * All of the CSS for your public-facing functionality should be
- * included in this file.
- */
+.text_tengah {
+    text-align: center !important;
+}
+.text_kiri {
+    text-align: left !important;
+}
+.text_kanan {
+    text-align: right !important;
+}
+.text_blok {
+    font-weight: bold !important;
+}
+@media  print {
+    .hide-print {
+        display: none;
+    }
+}
+#cetak {
+	padding: 10px;
+}

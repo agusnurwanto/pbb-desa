@@ -1,72 +1,3 @@
-jQuery(document).ready(function(){
-	var loading = ''
-		+'<div id="wrap-loading">'
-	        +'<div class="lds-hourglass"></div>'
-	        +'<div id="persen-loading"></div>'
-	    +'</div>';
-	if(jQuery('#wrap-loading').length == 0){
-		jQuery('body').prepend(loading);
-	}
-
-    jQuery('#petugas_pajak_bayar').on('change', function(){
-        jQuery('#wrap-loading').show();
-        get_data_list();
-        var tahun_anggaran = jQuery('#tahun_anggaran').val();
-        var petugas_pajak = jQuery(this).val();
-        jQuery.ajax({
-            url: ajaxurl,
-            type: 'post',
-            data: {
-                action: 'get_wajib_pajak',
-                tahun_anggaran: tahun_anggaran,
-                petugas_pajak: petugas_pajak
-            },
-            success: function(res){
-                res = JSON.parse(res);
-                var data_wp = '';
-                var data_wp_kosong = ''
-                    +'<tr>'
-                        +'<td colspan="6" style="text-align: center;">Data Kosong!</td>'
-                    +'</tr>';
-                if(res.status == 'success'){
-                    res.data.map(function(b, i){
-                        var status = '<span style="color: red;">Belum Bayar</span>';
-                        if(b.crb_pbb_status_bayar == 1){
-                            status = '<span style="color: green;">Terbayar</span>';
-                        }
-                        var checked = '';
-                        if(typeof data_id_post != 'undefined'){
-                            data_id_post.map(function(m, n){
-                                if(m == b.post_id){
-                                    checked = 'checked';
-                                }
-                            });
-                        }
-                        data_wp += ''
-                            +'<tr>'
-                                +'<td><input type="checkbox" data-post-id="'+b.post_id+'" '+checked+'></td>'
-                                +'<td style="text-align: right;">'+(i+1)+'</td>'
-                                +'<td>'+b.crb_pbb_nop+'</td>'
-                                +'<td>'+b.crb_pbb_nama_wp+'</td>'
-                                +'<td>'+b.crb_pbb_alamat_op+'</td>'
-                                +'<td style="width: 100px;">'+status+'</td>'
-                                +'<td>'+b.crb_pbb_ketetapan_pbb+'</td>'
-                            +'</tr>';
-                    });
-                    if(data_wp == ''){
-                        data_wp += data_wp_kosong;
-                    }
-                }else{
-                    data_wp += data_wp_kosong;
-                    alert(res.message);
-                }
-                jQuery('#table-pembayaran-pbb tbody').html(data_wp);
-                jQuery('#wrap-loading').hide();
-            }
-        });
-    });
-});
-
 function filePicked(oEvent) {
     jQuery('#wrap-loading').show();
     // Get The File From The Input
@@ -225,3 +156,79 @@ function print_pajak(){
         });
     }
 }
+
+jQuery(document).ready(function(){
+    var loading = ''
+        +'<div id="wrap-loading">'
+            +'<div class="lds-hourglass"></div>'
+            +'<div id="persen-loading"></div>'
+        +'</div>';
+    if(jQuery('#wrap-loading').length == 0){
+        jQuery('body').prepend(loading);
+    }
+
+    jQuery('#select-all').on('click', function(){
+        if(jQuery(this).is(':checked')){
+            jQuery('#table-pembayaran-pbb tbody input[type="checkbox"]').prop('checked', true);
+        }else{
+            jQuery('#table-pembayaran-pbb tbody input[type="checkbox"]').prop('checked', false);
+        }
+    });
+    jQuery('#petugas_pajak_bayar').on('change', function(){
+        jQuery('#wrap-loading').show();
+        get_data_list();
+        var tahun_anggaran = jQuery('#tahun_anggaran').val();
+        var petugas_pajak = jQuery(this).val();
+        jQuery.ajax({
+            url: ajaxurl,
+            type: 'post',
+            data: {
+                action: 'get_wajib_pajak',
+                tahun_anggaran: tahun_anggaran,
+                petugas_pajak: petugas_pajak
+            },
+            success: function(res){
+                res = JSON.parse(res);
+                var data_wp = '';
+                var data_wp_kosong = ''
+                    +'<tr>'
+                        +'<td colspan="6" style="text-align: center;">Data Kosong!</td>'
+                    +'</tr>';
+                if(res.status == 'success'){
+                    res.data.map(function(b, i){
+                        var status = '<span style="color: red;">Belum Bayar</span>';
+                        if(b.crb_pbb_status_bayar == 1){
+                            status = '<span style="color: green;">Terbayar</span>';
+                        }
+                        var checked = '';
+                        if(typeof data_id_post != 'undefined'){
+                            data_id_post.map(function(m, n){
+                                if(m == b.post_id){
+                                    checked = 'checked';
+                                }
+                            });
+                        }
+                        data_wp += ''
+                            +'<tr>'
+                                +'<td><input type="checkbox" data-post-id="'+b.post_id+'" '+checked+'></td>'
+                                +'<td style="text-align: right;">'+(i+1)+'</td>'
+                                +'<td>'+b.crb_pbb_nop+'</td>'
+                                +'<td>'+b.crb_pbb_nama_wp+'</td>'
+                                +'<td>'+b.crb_pbb_alamat_op+'</td>'
+                                +'<td style="width: 100px;">'+status+'</td>'
+                                +'<td>'+b.crb_pbb_ketetapan_pbb+'</td>'
+                            +'</tr>';
+                    });
+                    if(data_wp == ''){
+                        data_wp += data_wp_kosong;
+                    }
+                }else{
+                    data_wp += data_wp_kosong;
+                    alert(res.message);
+                }
+                jQuery('#table-pembayaran-pbb tbody').html(data_wp);
+                jQuery('#wrap-loading').hide();
+            }
+        });
+    });
+});

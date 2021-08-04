@@ -197,6 +197,7 @@ class Pbb_Desa_Admin {
 	            		'1' => 'Terbayar',
 	            		'0' => 'Belum Bayar'
 	            	) ),
+	            Field::make( 'date_time', 'crb_pbb_tgl_bayar', 'Tanggal Bayar' ),
 	            Field::make( 'text', 'crb_pbb_tahun_anggaran', 'Tahun Anggaran' ),
 	            Field::make( 'select', 'crb_pbb_petugas_pajak', 'Petugas Pajak' )
 	            	->add_options(  $list ),
@@ -351,6 +352,7 @@ class Pbb_Desa_Admin {
 		if (!empty($_POST)) {
 			foreach ($_POST['data'] as $k => $post_id) {
 				update_post_meta( $post_id, '_crb_pbb_status_bayar', $_POST['status'] );
+				update_post_meta( $post_id, '_crb_pbb_tgl_bayar', date('Y-m-d H:i:s') );
 			}
 		} else {
 			$ret['status'] = 'error';

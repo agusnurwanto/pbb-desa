@@ -1,7 +1,15 @@
-/**
- * All of the CSS for your admin-specific functionality should be
- * included in this file.
- */
+.text_tengah {
+    text-align: center !important;
+}
+.text_kiri {
+    text-align: left !important;
+}
+.text_kanan {
+    text-align: right !important;
+}
+.text_blok {
+    font-weight: bold !important;
+}
  #wrap-loading {
     display: none;
     width: 100%;
