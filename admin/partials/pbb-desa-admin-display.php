@@ -3,7 +3,7 @@ $input = shortcode_atts( array(
 	'tahun_anggaran' => '2021'
 ), $atts );
 global $wpdb;
-$body = '<tr><td colspan="8">Data kosong. Harap pilih dulu data yang akan ditampilkan!</td></tr>';
+$body = '<tr><td colspan="8" class="text_tengah">Data kosong. Harap pilih dulu data yang akan ditampilkan!</td></tr>';
 if(!empty($_GET['data_list'])){
 	$list = explode(',', $_GET['data_list']);
 	$body = '';

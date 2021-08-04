@@ -9,6 +9,11 @@ Semoga bermanfaat
 - Install wordpress
 - Install plugin ini dan aktifkan
 
+### Fitur:
+- Membuat user dengan role petugas pajak
+- Membuat manual atau mengimport data wajib pajak dari excel
+- Melakukan pembayaran berdasarkan petugas pajak
+- Print dan download excel laporan wajib pajak
 
 Permintaan fitur:
 - User umum bisa request penambahan fitur dengan membuat issue
