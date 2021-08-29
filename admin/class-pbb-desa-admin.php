@@ -111,11 +111,11 @@ class Pbb_Desa_Admin {
 	public function data_status_bayar($option = array('type' => false)){
 		$data = array(
     		'' => 'Pilih Status Pembayaran',
-    		'4' => 'Lunas',
-    		'3' => 'Diterima Kecamatan',
-    		'2' => 'Diterima Bendahara Desa',
+    		'0' => 'Belum Bayar',
     		'1' => 'Diterima Petugas Pajak',
-    		'0' => 'Belum Bayar'
+    		'2' => 'Diterima Bendahara Desa',
+    		'3' => 'Diterima Kecamatan',
+    		'4' => 'Lunas'
     	);
 		if($option['type'] == 'html'){
 			$html = '';
