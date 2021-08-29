@@ -156,6 +156,7 @@ class Pbb_Desa {
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
+		$this->loader->add_action('template_redirect', $plugin_admin, 'allow_access_private_post', 0);
 		$this->loader->add_action('carbon_fields_register_fields', $plugin_admin, 'crb_attach_pbb_options');
 		$this->loader->add_action('init', $plugin_admin, 'create_posttype_pbb');
 		$this->loader->add_action('wp_ajax_import_excel',  $plugin_admin, 'import_excel');

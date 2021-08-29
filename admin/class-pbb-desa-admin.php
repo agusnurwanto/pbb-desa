@@ -140,6 +140,16 @@ class Pbb_Desa_Admin {
 		}
 	}
 
+	public function generateRandomString($length = 10) {
+	    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+	    $charactersLength = strlen($characters);
+	    $randomString = '';
+	    for ($i = 0; $i < $length; $i++) {
+	        $randomString .= $characters[rand(0, $charactersLength - 1)];
+	    }
+	    return $randomString;
+	}
+
 	public function crb_attach_pbb_options(){
 		global $wpdb;
 
@@ -158,6 +168,9 @@ class Pbb_Desa_Admin {
 		$basic_options_container = Container::make( 'theme_options', __( 'PBB Options' ) )
 			->set_page_menu_position( 4 )
 	        ->add_fields( array(
+	            Field::make( 'text', 'crb_pbb_api_key', 'API KEY' )
+	            	->set_default_value($this->generateRandomString())
+	            	->set_help_text('Wajib diisi. API KEY digunakan untuk integrasi data.'),
 	            Field::make( 'text', 'crb_pbb_provinsi', 'Provinsi' )
 	            	->set_attribute('placeholder', 'PROVINSI JAWA TIMUR'),
 	            Field::make( 'text', 'crb_pbb_kabupaten', 'Kabupaten / Kota' )
@@ -175,8 +188,45 @@ class Pbb_Desa_Admin {
 	            	->set_attribute('placeholder', 'gulun.magetan.go.id'),
 	            Field::make( 'text', 'crb_pbb_email', 'Email' )
 	            	->set_attribute('placeholder', 'gulun@magetan.go.id'),
-	            Field::make( 'text', 'crb_pbb_tlp', 'No. Tlp' )
+	            Field::make( 'text', 'crb_pbb_tlp', 'No. Tlp Desa' )
 	            	->set_attribute('placeholder', '085708297100'),
+	            Field::make( 'radio', 'crb_status_notif_wa', __( 'Aktifkan notifikasi WA' ) )
+				    ->add_options( array(
+				        '1' => __( 'Ya' ),
+				        '2' => __( 'Tidak' )
+				    ) )
+	            	->set_default_value('2')
+	            	->set_help_text('Bendahara akan mendapatkan notifikasi WA rekapitulasi data perubahan status pembayaran. Wajib pajak juga akan mendapatkan notifikasi WA terkait status pembayaran PBB yang bersangkutan.'),
+	            Field::make( 'text', 'crb_pbb_wa_bendahara', 'No. WA Bendahara' )
+	            	->set_attribute('placeholder', '085708297100'),
+	            Field::make( 'text', 'crb_pbb_api_wa_url', 'URL API WA' )
+	            	->set_default_value('http://multics.id/api/v1/')
+	            	->set_help_text( 'URL perlu dirubah jika ada udpate terbaru dari layanan woo-wa.com' ),
+	            Field::make( 'text', 'crb_pbb_device_key', 'Device Key untuk notifikasi WA' )
+	            	->set_attribute('placeholder', 'xxxxxxx-xx-xxx-xxxx-xxxxxxxxxx')
+	            	->set_help_text( 'Bisa didapatkan dengan berlangganan API WA di <a href="https://woo-wa.com/?ref=5585" target="blank">https://woo-wa.com/?ref=5585</a>.' ),
+	            Field::make( 'textarea', 'crb_pbb_template_notifikasi_wa_bendahara', 'Template Notifikasi WA ke bendahara.' )
+	            	->set_default_value( '*Update status data PBB:*'.
+						PHP_EOL.
+						PHP_EOL.
+						'{{data_pajak}}'.
+						PHP_EOL.
+						PHP_EOL.
+						'Tanggal transaksi *{{tgl_bayar}}*'
+	            	)
+	            	->set_help_text( 'Variable kata di dalam {{..}} akan diganti sesuai data wajib pajak.' ),
+	            Field::make( 'textarea', 'crb_pbb_template_notifikasi_wa', 'Template Notifikasi WA ke wajib pajak.' )
+	            	->set_default_value( 'Yth. Bpk/Ibu *{{nama_wp}}*,'.
+	            		PHP_EOL.
+	            		PHP_EOL.
+	            		'Status pembayaran pajak atas NOP. {{nop}} adalah {{status_bayar}}.'.
+	            		PHP_EOL.
+	            		'Tanggal trankasi {{tgl_bayar}}.'.
+	            		PHP_EOL.
+	            		PHP_EOL.
+	            		'Informasi lebih lengkap bisa dilihat di {{url_wp}}'
+	            	)
+	            	->set_help_text( 'Variable kata di dalam {{..}} akan diganti sesuai data wajib pajak.' )
 	        ) );
 
 	    Container::make( 'theme_options', __( 'Pembayaran' ) )
@@ -411,6 +461,36 @@ class Pbb_Desa_Admin {
 		die(json_encode($ret));
 	}
 
+	function send_notif_wa($options = array()){
+		$url = get_option('_crb_pbb_api_wa_url').'send-text';
+		$device_key = get_option('_crb_pbb_device_key');
+		$data = array(
+		  "number"  => $options['number'],
+		  "message" => $options['message']
+		);
+		$data_string = http_build_query($data,1);
+
+		$ch = curl_init($url);
+		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_VERBOSE, 0);
+		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 0);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 0);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+		    "device-key: $device_key",
+		    'Content-Type: application/x-www-form-urlencoded'
+		));
+		$result = curl_exec($ch);
+		curl_close($ch);
+		if($options['debug']){
+			die($result);
+		}
+		return $result;
+	}
+
 	function ubah_status_pajak(){
 		global $wpdb;
 		$ret = array(
@@ -418,9 +498,49 @@ class Pbb_Desa_Admin {
 			'message'	=> 'Berhasil ubah status wajib pajak!'
 		);
 		if (!empty($_POST)) {
+			$status_notif_wa = get_option('_crb_status_notif_wa');
+			$tgl_bayar = date('Y-m-d H:i:s');
+			$data_bayar = array();
+			$status_bayar = $this->data_status_bayar();
+			$nilai_total = 0;
+			$status_bayar_wp = '';
 			foreach ($_POST['data'] as $k => $post_id) {
 				update_post_meta( $post_id, '_crb_pbb_status_bayar', $_POST['status'] );
-				update_post_meta( $post_id, '_crb_pbb_tgl_bayar', date('Y-m-d H:i:s') );
+				update_post_meta( $post_id, '_crb_pbb_tgl_bayar', $tgl_bayar );
+				
+				if($status_notif_wa == 1){
+					$nama = get_post_meta( $post_id, '_crb_pbb_nama_wp', true );
+					$nilai = get_post_meta( $post_id, '_crb_pbb_ketetapan_pbb', true );
+					$nop = get_post_meta( $post_id, '_crb_pbb_nop', true );
+					if(empty($nilai)){
+						$nilai = 0;
+					}
+					$nilai_total += $nilai;
+					$status_bayar_wp = $status_bayar[$_POST['status']];
+					$data_bayar[] = 'a/n '.$nama.' | NOP. '.$nop.' | Rp '.number_format($nilai,0,",",".");
+				}
+			}
+			if($status_notif_wa == 1){
+				$no_bendahara = get_option('_crb_pbb_wa_bendahara');
+				if(!empty($no_bendahara)){
+					$pesan = get_option('_crb_pbb_template_notifikasi_wa_bendahara');
+					$pesan = str_replace(array(
+						'{{data_pajak}}',
+						'{{tgl_bayar}}'
+					), array(
+						implode(PHP_EOL, $data_bayar).
+						PHP_EOL.
+						PHP_EOL.
+						'Status pembayaran: *'.$status_bayar_wp.'*'.
+						PHP_EOL.
+						'Total *Rp '.number_format($nilai_total,0,",",".").'*',
+						$tgl_bayar
+					), $pesan);
+					$this->send_notif_wa(array(
+						'number' => $no_bendahara,
+						'message' => $pesan
+					));
+				}
 			}
 		} else {
 			$ret['status'] = 'error';
@@ -471,12 +591,79 @@ class Pbb_Desa_Admin {
 		die(json_encode($ret));
 	}
 
-	public function printpbb($atts)
-	{
+	public function printpbb($atts){
 		// untuk disable render shortcode di halaman edit page/post
 		if(!empty($_GET) && !empty($_GET['post'])){
 			return '';
 		}
 		require_once plugin_dir_path(dirname(__FILE__)) . 'admin/partials/pbb-desa-admin-display.php';
 	}
+
+	function gen_key($key_db = false){
+		$now = time()*1000;
+		if(empty($key_db)){
+			$key_db = get_option( '_crb_pbb_api_key' );
+		}
+		$key = base64_encode($now.$key_db.$now);
+		return $key;
+	}
+
+    function allow_access_private_post(){
+    	if(
+    		!empty($_GET) 
+    		&& !empty($_GET['key'])
+    	){
+    		$key = base64_decode($_GET['key']);
+    		$key_db = get_option( '_crb_pbb_api_key' );
+    		$key = explode($key_db, $key);
+    		$valid = 0;
+    		if(
+    			!empty($key[1]) 
+    			&& $key[0] == $key[1]
+    			&& is_numeric($key[1])
+    		){
+    			$tgl1 = new DateTime();
+    			$date = substr($key[1], 0, strlen($key[1])-3);
+    			$tgl2 = new DateTime(date('Y-m-d', $date));
+    			$valid = $tgl2->diff($tgl1)->days+1;
+    		}
+    		if($valid == 1){
+	    		global $wp_query;
+		        // print_r($wp_query);
+		        // print_r($wp_query->queried_object); die('tes');
+		        if(!empty($wp_query->queried_object)){
+		    		if($wp_query->queried_object->post_status == 'private'){
+						wp_update_post(array(
+					        'ID'    =>  $wp_query->queried_object->ID,
+					        'post_status'   =>  'publish'
+				        ));
+				        die('<script>window.location =  window.location.href;</script>');
+					}else{
+						wp_update_post(array(
+					        'ID'    =>  $wp_query->queried_object->ID,
+					        'post_status'   =>  'private'
+				        ));
+					}
+				}else if($wp_query->found_posts >= 1){
+					global $wpdb;
+					$sql = $wp_query->request;
+					$post = $wpdb->get_results($sql, ARRAY_A);
+					if(!empty($post)){
+						if($post[0]['post_status'] == 'private'){
+							wp_update_post(array(
+						        'ID'    =>  $post[0]['ID'],
+						        'post_status'   =>  'publish'
+					        ));
+					        die('<script>window.location =  window.location.href;</script>');
+						}else{
+							wp_update_post(array(
+						        'ID'    =>  $post[0]['ID'],
+						        'post_status'   =>  'private'
+					        ));
+						}
+					}
+				}
+			}
+    	}
+    }
 }
