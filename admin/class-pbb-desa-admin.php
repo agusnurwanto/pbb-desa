@@ -232,6 +232,13 @@ class Pbb_Desa_Admin {
 	    Container::make( 'theme_options', __( 'Import Wajib Pajak' ) )
 		    ->set_page_parent( $basic_options_container )
 		    ->add_fields( array(
+		    	Field::make( 'html', 'crb_hide_sidebar' )
+		        	->set_html( '
+		        		<style>
+		        			.postbox-container { display: none; }
+		        			#poststuff #post-body.columns-2 { margin: 0 !important; }
+		        		</style>
+		        	' ),
 		        Field::make( 'html', 'crb_referensi_html' )
 	            	->set_html( 'Video Referensi: <a target="_blank" href="https://www.youtube.com/watch?v=UIGDx_6XRV8">https://www.youtube.com/watch?v=UIGDx_6XRV8</a>' ),
 		        Field::make( 'html', 'crb_pilih_tahun_html' )
