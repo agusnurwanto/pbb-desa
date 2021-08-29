@@ -443,14 +443,17 @@ class Pbb_Desa_Admin {
 				if(empty($status)){
 					$status = 0;
 				}
+				$nop = get_post_meta( $post->ID, '_crb_pbb_nop', true );
+				$nama_wp = get_post_meta( $post->ID, '_crb_pbb_nama_wp', true );
 				$data_all[] = array(
 					'post_id' => $post->ID,
-					'crb_pbb_nop'	=> get_post_meta( $post->ID, '_crb_pbb_nop', true ),
-					'crb_pbb_nama_wp'	=> get_post_meta( $post->ID, '_crb_pbb_nama_wp', true ),
+					'crb_pbb_nop'	=> $nop,
+					'crb_pbb_nama_wp'	=> $nama_wp,
 					'crb_pbb_alamat_op'	=> get_post_meta( $post->ID, '_crb_pbb_alamat_op', true ),
 					'crb_pbb_status_bayar'	=> $status,
 					'crb_pbb_ketetapan_pbb'	=> 'Rp '.number_format($nilai,0,",","."),
-					'crb_pbb_tgl'	=> get_post_meta( $post->ID, '_crb_pbb_tgl_bayar', true )
+					'crb_pbb_tgl'	=> get_post_meta( $post->ID, '_crb_pbb_tgl_bayar', true ),
+					'crb_pbb_url'	=> get_permalink( $post )
 				);
 		    }
 		    $ret['data'] = $data_all;

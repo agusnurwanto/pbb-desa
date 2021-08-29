@@ -39,6 +39,8 @@ class Pbb_Desa_Public {
 	 * @var      string    $version    The current version of this plugin.
 	 */
 	private $version;
+	
+	private $class_admin;
 
 	/**
 	 * Initialize the class and set its properties.
@@ -47,10 +49,11 @@ class Pbb_Desa_Public {
 	 * @param      string    $plugin_name       The name of the plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
+	public function __construct( $plugin_name, $version, $class_admin ) {
 
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
+		$this->class_admin = $class_admin;
 
 	}
 

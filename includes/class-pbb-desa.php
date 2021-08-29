@@ -174,8 +174,8 @@ class Pbb_Desa {
 	 * @access   private
 	 */
 	private function define_public_hooks() {
-
-		$plugin_public = new Pbb_Desa_Public( $this->get_plugin_name(), $this->get_version() );
+		$plugin_admin = new Pbb_Desa_Admin( $this->get_plugin_name(), $this->get_version() );
+		$plugin_public = new Pbb_Desa_Public( $this->get_plugin_name(), $this->get_version(), $plugin_admin );
 
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );

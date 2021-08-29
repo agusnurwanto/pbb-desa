@@ -242,7 +242,7 @@ jQuery(document).ready(function(){
                             +'<tr>'
                                 +'<td class="text_tengah"><input type="checkbox" data-post-id="'+b.post_id+'" '+checked+'></td>'
                                 +'<td class="text_tengah" style="text-align: right;">'+(i+1)+'</td>'
-                                +'<td class="text_tengah">'+b.crb_pbb_nop+'</td>'
+                                +'<td class="text_tengah"><a href="'+b.crb_pbb_url+'" target="blank">'+b.crb_pbb_nop+'</a></td>'
                                 +'<td>'+b.crb_pbb_nama_wp+'</td>'
                                 +'<td>'+b.crb_pbb_alamat_op+'</td>'
                                 +'<td style="width: 100px;">'+status+'</td>'
