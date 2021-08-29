@@ -112,4 +112,13 @@ class Pbb_Desa_Public {
 		require_once plugin_dir_path(dirname(__FILE__)) . 'public/partials/pbb-desa-public-display.php';
 	}
 
+	public function monitor_all_pajak($atts)
+	{
+		// untuk disable render shortcode di halaman edit page/post
+		if(!empty($_GET) && !empty($_GET['post'])){
+			return '';
+		}
+		require_once plugin_dir_path(dirname(__FILE__)) . 'public/partials/pbb-desa-monev-all.php';
+	}
+
 }

@@ -156,13 +156,18 @@ class Pbb_Desa {
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
+		
 		$this->loader->add_action('template_redirect', $plugin_admin, 'allow_access_private_post', 0);
 		$this->loader->add_action('carbon_fields_register_fields', $plugin_admin, 'crb_attach_pbb_options');
+		$this->loader->add_filter('carbon_fields_should_save_field_value', $plugin_admin, 'crb_edit_save', 10, 3);
 		$this->loader->add_action('init', $plugin_admin, 'create_posttype_pbb');
+
 		$this->loader->add_action('wp_ajax_import_excel',  $plugin_admin, 'import_excel');
 		$this->loader->add_action('wp_ajax_get_wajib_pajak',  $plugin_admin, 'get_wajib_pajak');
 		$this->loader->add_action('wp_ajax_ubah_status_pajak',  $plugin_admin, 'ubah_status_pajak');
 		$this->loader->add_action('wp_ajax_get_url_print_pbb',  $plugin_admin, 'get_url_print_pbb');
+		$this->loader->add_action('wp_ajax_listen_wa',  $plugin_admin, 'listen_wa');
+		$this->loader->add_action('wp_ajax_nopriv_listen_wa',  $plugin_admin, 'listen_wa');
 		add_shortcode('printpbb', array($plugin_admin, 'printpbb'));
 	}
 
@@ -180,6 +185,7 @@ class Pbb_Desa {
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 		add_shortcode('tampilpbb', array($plugin_public, 'tampilpbb'));
+		add_shortcode('monitor_all_pajak', array($plugin_public, 'monitor_all_pajak'));
 
 	}
 

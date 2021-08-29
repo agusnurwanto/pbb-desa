@@ -168,6 +168,9 @@ class Pbb_Desa_Admin {
 		$basic_options_container = Container::make( 'theme_options', __( 'PBB Options' ) )
 			->set_page_menu_position( 4 )
 	        ->add_fields( array(
+	            Field::make( 'text', 'crb_pbb_tahun_anggaran', 'Tahun Anggaran' )
+	            	->set_default_value('2021')
+	            	->set_attribute('placeholder', '2021'),
 	            Field::make( 'text', 'crb_pbb_api_key', 'API KEY' )
 	            	->set_default_value($this->generateRandomString())
 	            	->set_help_text('Wajib diisi. API KEY digunakan untuk integrasi data.'),
@@ -226,7 +229,9 @@ class Pbb_Desa_Admin {
 	            		PHP_EOL.
 	            		'Informasi lebih lengkap bisa dilihat di {{url_wp}}'
 	            	)
-	            	->set_help_text( 'Variable kata di dalam {{..}} akan diganti sesuai data wajib pajak.' )
+	            	->set_help_text( 'Variable kata di dalam {{..}} akan diganti sesuai data wajib pajak.' ),
+	            Field::make( 'textarea', 'crb_pbb_wa_penerima_chatbot', 'No Penerima Chatbot WA PBB Desa.' )
+	            	->set_help_text( 'Nomor WA bisa lebih dari dipisah dengan ",". Format nomor harus diawalai dengan 62. Contoh "6285708297100,6285708297104,6285708297101". Nomor ini bisa mendapatkan balasan WA misal dengan mengirimkan pesan WA "pbb-desa-2021" ke nomor WA notifikasi.' )
 	        ) );
 
 	    Container::make( 'theme_options', __( 'Pembayaran' ) )
@@ -709,4 +714,125 @@ class Pbb_Desa_Admin {
 			}
     	}
     }
+
+    function listen_wa(){
+    	$json = file_get_contents('php://input');
+		$data = json_decode($json);
+		$file = plugin_dir_path(dirname(__FILE__))."listen_wa.txt";
+		file_put_contents($file, print_r($data,1));
+		$penerima = get_option('_crb_pbb_wa_penerima_chatbot');
+		if(!empty($penerima)){
+			$semua_penerima = explode(',', $penerima);
+			$pengirim = $data->data->number;
+			$pesan = $data->data->message;
+			$tahun_anggaran = get_option('_crb_pbb_tahun_anggaran');
+			foreach ($semua_penerima as $k => $no_penerima) {
+				if($no_penerima == $pengirim){
+					if(strpos($pesan, 'pbb-desa-'.$tahun_anggaran) !== false){
+						$posts = get_posts(array( 
+							'numberposts'	=> -1,
+							'post_type' => 'wajib_pajak', 
+							'meta_query' => array(
+						        array(
+						            'key'   => '_crb_pbb_tahun_anggaran',
+						            'value' => $tahun_anggaran
+						        ),
+			        			'relation' => 'AND'
+						    ),
+						    'post_status' => 'private',
+						    'meta_key'  => '_crb_pbb_nop',
+						    'orderby'   => 'meta_value_num',
+						    'order' => 'ASC'
+						));
+						$total_pajak = 0;
+						$total_belum_bayar = 0;
+						$total_diterima_petugas_pajak = 0;
+						$total_diterima_bendahara_desa = 0;
+						$total_diterima_kecamatan = 0;
+						$total_lunas = 0;
+						foreach ($posts as $k => $post) {
+							$nilai = get_post_meta( $post->ID, '_crb_pbb_ketetapan_pbb', true );
+							if(empty($nilai)){
+								$nilai = 0;
+							}
+							$status = get_post_meta( $post->ID, '_crb_pbb_status_bayar', true );
+							if(empty($status)){
+								$status = 0;
+							}
+							$total_pajak += $nilai;
+							if($status == 0){
+								$total_belum_bayar += $nilai;
+							}else if($status == 1){
+								$total_diterima_petugas_pajak += $nilai;
+							}else if($status == 2){
+								$total_diterima_bendahara_desa += $nilai;
+							}else if($status == 3){
+								$total_diterima_kecamatan += $nilai;
+							}else if($status == 4){
+								$total_lunas += $nilai;
+							}
+						}
+						$nama_post = $tahun_anggaran.' | PBB Desa';
+						$custom_post = get_page_by_title($nama_post, OBJECT, 'page');
+
+						$replay = '*PBB Desa '.$tahun_anggaran.'*'.
+							PHP_EOL.
+							PHP_EOL.
+							'Jumlah Objek Pajak: *'.count($posts).' Objek*'.
+							PHP_EOL.
+							'Total Pajak: *Rp '.number_format($total_pajak,0,",",".").'*'.
+							PHP_EOL.
+							'Belum Bayar: *Rp '.number_format($total_belum_bayar,0,",",".").'*'.
+							PHP_EOL.
+							'Diterima Petugas Pajak: *Rp '.number_format($total_diterima_petugas_pajak,0,",",".").'*'.
+							PHP_EOL.
+							'Diterima Bendahara Desa: *Rp '.number_format($total_diterima_bendahara_desa,0,",",".").'*'.
+							PHP_EOL.
+							'Diterima Kecamatan: *Rp '.number_format($total_diterima_kecamatan,0,",",".").'*'.
+							PHP_EOL.
+							'Lunas: *Rp '.number_format($total_lunas,0,",",".").'*'.
+							PHP_EOL.
+							PHP_EOL.
+							'Informasi lebih detail bisa dilihat di *'.get_permalink($custom_post).'?key='.$this->gen_key(false, true).'*';
+
+						$this->send_notif_wa(array(
+							'number' => $pengirim,
+							'message' => $replay,
+							'debug' => false
+						));
+					}
+				}
+			}
+		}
+		die($file);
+    }
+
+	public function crb_edit_save($save, $value, $field){
+		if($field->get_name() == '_crb_pbb_tahun_anggaran'){
+			$nama_post = $value.' | PBB Desa';
+			$custom_post = get_page_by_title($nama_post, OBJECT, 'page');
+			$_post = array(
+				'post_title'	=> $nama_post,
+				'post_content'	=> '[monitor_all_pajak tahun_anggaran="'.$value.'"]',
+				'post_type'		=> 'page',
+				'post_status'	=> 'private',
+				'comment_status'	=> 'closed'
+			);
+			if (empty($custom_post) || empty($custom_post->ID)) {
+				wp_insert_post($_post);
+				$custom_post = get_page_by_title($nama_post, OBJECT, 'page');
+				update_post_meta($custom_post->ID, 'ast-breadcrumbs-content', 'disabled');
+				update_post_meta($custom_post->ID, 'ast-featured-img', 'disabled');
+				update_post_meta($custom_post->ID, 'ast-main-header-display', 'disabled');
+				update_post_meta($custom_post->ID, 'footer-sml-layout', 'disabled');
+				update_post_meta($custom_post->ID, 'site-content-layout', 'page-builder');
+				update_post_meta($custom_post->ID, 'site-post-title', 'disabled');
+				update_post_meta($custom_post->ID, 'site-sidebar-layout', 'no-sidebar');
+				update_post_meta($custom_post->ID, 'theme-transparent-header-meta', 'disabled');
+			}
+			return $value;
+		}else{
+			return $value;
+		}
+	}
 }
