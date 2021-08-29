@@ -219,9 +219,9 @@ class Pbb_Desa_Admin {
 	            	->set_default_value( 'Yth. Bpk/Ibu *{{nama_wp}}*,'.
 	            		PHP_EOL.
 	            		PHP_EOL.
-	            		'Status pembayaran pajak atas NOP. {{nop}} adalah {{status_bayar}}.'.
+	            		'Status pembayaran pajak atas NOP. *{{nop}}* adalah *{{status_bayar}}*.'.
 	            		PHP_EOL.
-	            		'Tanggal trankasi {{tgl_bayar}}.'.
+	            		'Tanggal transaksi *{{tgl_bayar}}*.'.
 	            		PHP_EOL.
 	            		PHP_EOL.
 	            		'Informasi lebih lengkap bisa dilihat di {{url_wp}}'
@@ -261,7 +261,7 @@ class Pbb_Desa_Admin {
 	            	<table id="table-pembayaran-pbb" class="wp-list-table widefat fixed striped table-view-list">
 	            		<thead>
 	            			<tr>
-	            				<th style="width: 20px;"><input type="checkbox" id="select-all" style="margin:0;"></th>
+	            				<th style="width: 40px;"><input type="checkbox" id="select-all" style="margin:0;"></th>
 	            				<th style="width: 20px;">No</th>
 	            				<th style="width: 170px;">No. Object Pajak</th>
 	            				<th style="width: 170px;">Nama Wajib Pajak</th>
@@ -308,7 +308,7 @@ class Pbb_Desa_Admin {
 	        ->add_fields( array(
 	            Field::make( 'select', 'crb_pbb_status_bayar', 'Status Pembayaran' )
 	            	->add_options(  $this->data_status_bayar() ),
-	            Field::make( 'date_time', 'crb_pbb_tgl_bayar', 'Tanggal Bayar' ),
+	            Field::make( 'date_time', 'crb_pbb_tgl_bayar', 'Tanggal Transaksi' ),
 	            Field::make( 'text', 'crb_pbb_tahun_anggaran', 'Tahun Anggaran' ),
 	            Field::make( 'select', 'crb_pbb_petugas_pajak', 'Petugas Pajak' )
 	            	->add_options(  $list ),
@@ -324,7 +324,15 @@ class Pbb_Desa_Admin {
 	            Field::make( 'text', 'crb_pbb_nama_wp', 'Nama Wajib Pajak' ),
 	            Field::make( 'textarea', 'crb_pbb_alamat_wp', 'Alamat Wajib Pajak' ),
 	            Field::make( 'textarea', 'crb_pbb_alamat_op', 'Alamat Objek Pajak' ),
-	            Field::make( 'map', 'crb_pbb_map_op', 'Map' )
+	            Field::make( 'map', 'crb_pbb_map_op', 'Map' ),
+	            Field::make( 'select', 'crb_pbb_notifikasi_wa', 'Kirim Notifikasi WA' )
+	            	->add_options( array(
+				        '1' => __( 'Ya' ),
+				        '2' => __( 'Tidak' )
+				    ) )
+	            	->set_default_value('2')
+	            	->set_help_text('Wajib pajak akan mendapatkan notifikasi lewat WA setiap kali ada perubahan status pembayaran jika dipilih Ya.'),
+	            Field::make( 'text', 'crb_pbb_no_wa', 'Nomor WA' )
 	        ) );
 
 	}
@@ -522,6 +530,31 @@ class Pbb_Desa_Admin {
 					$status_bayar_wp = $status_bayar[$_POST['status']];
 					$data_bayar[] = 'a/n '.$nama.' | NOP. '.$nop.' | Rp '.number_format($nilai,0,",",".");
 				}
+
+				$status_notif_wa_wp = get_post_meta($post_id, '_crb_pbb_notifikasi_wa', true);
+				if($status_notif_wa_wp == 1){
+					$no_wp = get_post_meta($post_id, '_crb_pbb_no_wa', true);
+					if(!empty($no_wp)){
+						$pesan = get_option('_crb_pbb_template_notifikasi_wa');
+						$pesan = str_replace(array(
+							'{{nama_wp}}',
+							'{{nop}}',
+							'{{status_bayar}}',
+							'{{tgl_bayar}}',
+							'{{url_wp}}'
+						), array(
+							$nama,
+							$nop,
+							$status_bayar_wp,
+							$tgl_bayar,
+							get_permalink($post_id).'?key='.$this->gen_key(false, true)
+						), $pesan);
+						$this->send_notif_wa(array(
+							'number' => $no_wp,
+							'message' => $pesan
+						));
+					}
+				}
 			}
 			if($status_notif_wa == 1){
 				$no_bendahara = get_option('_crb_pbb_wa_bendahara');
@@ -602,12 +635,17 @@ class Pbb_Desa_Admin {
 		require_once plugin_dir_path(dirname(__FILE__)) . 'admin/partials/pbb-desa-admin-display.php';
 	}
 
-	function gen_key($key_db = false){
+	function gen_key($key_db = false, $lifetime = false){
 		$now = time()*1000;
 		if(empty($key_db)){
 			$key_db = get_option( '_crb_pbb_api_key' );
 		}
-		$key = base64_encode($now.$key_db.$now);
+		$key_db = md5($key_db);
+		if($lifetime){
+			$key = base64_encode($now.$key_db.$now.$key_db.'ok');
+		}else{
+			$key = base64_encode($now.$key_db.$now);
+		}
 		return $key;
 	}
 
@@ -618,9 +656,11 @@ class Pbb_Desa_Admin {
     	){
     		$key = base64_decode($_GET['key']);
     		$key_db = get_option( '_crb_pbb_api_key' );
-    		$key = explode($key_db, $key);
+    		$key = explode(md5($key_db), $key);
     		$valid = 0;
-    		if(
+    		if(!empty($key[2]) && $key[2]=='ok'){
+    			$valid = 1;
+    		}else if(
     			!empty($key[1]) 
     			&& $key[0] == $key[1]
     			&& is_numeric($key[1])

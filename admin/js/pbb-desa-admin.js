@@ -67,13 +67,13 @@ function import_excel(){
                         data: b
                     },
                     success: function(res){
-                        resolve_redurce(nextData);
+                        resolve_redurce(true);
                     }
                 });
             })
             .catch(function(e){
                 console.log(e);
-                return Promise.resolve(nextData);
+                return Promise.resolve(true);
             });
         });
 
@@ -87,44 +87,6 @@ function import_excel(){
             jQuery('#wrap-loading').hide();
             alert('Error!');
         });
-
-        /*var last = data_all.length-1;
-        data_all.reduce(function(sequence, nextData){
-            return sequence.then(function(current_data){
-                return new Promise(function(resolve_redurce, reject_redurce){
-                    jQuery.ajax({
-						url: ajaxurl,
-						type: 'post',
-						data: {
-							action: 'import_excel',
-                            tahun_anggaran: tahun_anggaran,
-                            petugas_pajak: petugas_pajak,
-							data: current_data
-						},
-						success: function(res){
-                    		resolve_redurce(nextData);
-						}
-					});
-                })
-                .catch(function(e){
-                    console.log(e);
-                    return Promise.resolve(nextData);
-                });
-            })
-            .catch(function(e){
-                console.log(e);
-                return Promise.resolve(nextData);
-            });
-        }, Promise.resolve(data_all[last]))
-        .then(function(data_last){
-            jQuery('#wrap-loading').hide();
-            alert('Success import wajib pajak dari excel!');
-        })
-        .catch(function(e){
-            console.log(e);
-            jQuery('#wrap-loading').hide();
-            alert('Error!');
-        });*/
     }
 }
 
