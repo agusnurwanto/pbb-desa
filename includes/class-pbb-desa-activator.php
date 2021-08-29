@@ -40,6 +40,26 @@ class Pbb_Desa_Activator {
 				)
 			);
 		}
+		$role = get_role('bendahara_desa');
+		if ( empty($role) ) {
+		    $result = add_role( 
+				'bendahara_desa', 
+				__('Bendahara Desa / Kelurahan' ),
+				array(
+					'read' => true, // true allows this capability
+				)
+			);
+		}
+		$role = get_role('kepala_desa');
+		if ( empty($role) ) {
+		    $result = add_role( 
+				'kepala_desa', 
+				__('Kepala Desa / Lurah' ),
+				array(
+					'read' => true, // true allows this capability
+				)
+			);
+		}
 	}
 
 }

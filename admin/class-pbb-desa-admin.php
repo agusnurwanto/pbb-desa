@@ -102,7 +102,42 @@ class Pbb_Desa_Admin {
 		wp_enqueue_script( $this->plugin_name.'jszip', plugin_dir_url( __FILE__ ) . 'js/jszip.js', array( 'jquery' ), $this->version, false );
 		wp_enqueue_script( $this->plugin_name.'xlsx', plugin_dir_url( __FILE__ ) . 'js/xlsx.js', array( 'jquery' ), $this->version, false );
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/pbb-desa-admin.js', array( 'jquery' ), $this->version, false );
+		wp_localize_script( $this->plugin_name, 'pbb', array(
+		    'status_bayar' => $this->data_status_bayar(array('type' => 'html_color'))
+		));
 
+	}
+
+	public function data_status_bayar($option = array('type' => false)){
+		$data = array(
+    		'' => 'Pilih Status Pembayaran',
+    		'4' => 'Lunas',
+    		'3' => 'Diterima Kecamatan',
+    		'2' => 'Diterima Bendahara Desa',
+    		'1' => 'Diterima Petugas Pajak',
+    		'0' => 'Belum Bayar'
+    	);
+		if($option['type'] == 'html'){
+			$html = '';
+			foreach ($data as $k => $v) {
+				$html .= '<option value="'.$k.'">'.$v.'</option>';
+			}
+			return $html;
+		}else if($option['type'] == 'html_color'){
+			$new_data = array();
+			foreach ($data as $k => $v) {
+				if($k >= 1 && $k <=3){
+					$new_data[$k] = '<span style="color: orange; font-weight: bold;">'.$v.'</span>';
+				}else if($k == 4){
+					$new_data[$k] = '<span style="color: green; font-weight: bold;">'.$v.'</span>';
+				}else{
+					$new_data[$k] = '<span style="color: red; font-weight: bold;">'.$v.'</span>';
+				}
+			}
+			return $new_data;
+		}else{
+			return $data;
+		}
 	}
 
 	public function crb_attach_pbb_options(){
@@ -123,13 +158,37 @@ class Pbb_Desa_Admin {
 		$basic_options_container = Container::make( 'theme_options', __( 'PBB Options' ) )
 			->set_page_menu_position( 4 )
 	        ->add_fields( array(
-	            Field::make( 'select', 'crb_pbb_petugas_pajak', 'Pilih Petugas Pajak' )
-    				->add_options(  $list )
+	            Field::make( 'text', 'crb_pbb_provinsi', 'Provinsi' )
+	            	->set_attribute('placeholder', 'PROVINSI JAWA TIMUR'),
+	            Field::make( 'text', 'crb_pbb_kabupaten', 'Kabupaten / Kota' )
+	            	->set_attribute('placeholder', 'KABUPATEN MAGETAN'),
+	            Field::make( 'text', 'crb_pbb_kecamatan', 'Kecamatan' )
+	            	->set_attribute('placeholder', 'KECAMATAN MAOSPATI'),
+	            Field::make( 'text', 'crb_pbb_desa', 'Nama Desa / Kelurahan' )
+	            	->set_attribute('placeholder', 'DESA GULUN'),
+	            Field::make( 'text', 'crb_pbb_kode_wilayah', 'Kode Desa / Wilayah' )
+	            	->set_attribute('placeholder', '63392')
+	            	->set_help_text( 'Diisi kode wilayah desa sesuai data di kemendagri atau bisa diisi kode pos desa.' ),
+	            Field::make( 'text', 'crb_pbb_alamat', 'Alamat' )
+	            	->set_attribute('placeholder', 'Jl. Mangga No. 123'),
+	            Field::make( 'text', 'crb_pbb_website', 'Website Desa' )
+	            	->set_attribute('placeholder', 'gulun.magetan.go.id'),
+	            Field::make( 'text', 'crb_pbb_email', 'Email' )
+	            	->set_attribute('placeholder', 'gulun@magetan.go.id'),
+	            Field::make( 'text', 'crb_pbb_tlp', 'No. Tlp' )
+	            	->set_attribute('placeholder', '085708297100'),
 	        ) );
 
 	    Container::make( 'theme_options', __( 'Pembayaran' ) )
 		    ->set_page_parent( $basic_options_container )
 		    ->add_fields( array(
+		    	Field::make( 'html', 'crb_hide_sidebar' )
+		        	->set_html( '
+		        		<style>
+		        			.postbox-container { display: none; }
+		        			#poststuff #post-body.columns-2 { margin: 0 !important; }
+		        		</style>
+		        	' ),
 		        Field::make( 'html', 'crb_referensi_html' )
 	            	->set_html( 'Referensi: <a target="_blank" href="https://www.youtube.com/watch?v=UIGDx_6XRV8">https://www.youtube.com/watch?v=UIGDx_6XRV8</a>' ),
 		        Field::make( 'html', 'crb_pilih_tahun_html' )
@@ -140,9 +199,7 @@ class Pbb_Desa_Admin {
 	            	->set_html( '
 	            		Ubah status bayar : 
 	            		<select id="status_bayar" style="min-width: 250px;">
-	            			<option value="">Pilih Status</option>
-	            			<option value="1">Terbayar</option>
-	            			<option value="0">Belum Bayar</option>
+	            			'.$this->data_status_bayar(array('type' => 'html')).'
 	            		</select>
 	            ' ),
 		        Field::make( 'html', 'crb_aksi_html' )
@@ -155,12 +212,13 @@ class Pbb_Desa_Admin {
 	            		<thead>
 	            			<tr>
 	            				<th style="width: 20px;"><input type="checkbox" id="select-all" style="margin:0;"></th>
-	            				<th style="width: 30px;">No</th>
+	            				<th style="width: 20px;">No</th>
 	            				<th style="width: 170px;">No. Object Pajak</th>
-	            				<th style="width: 200px;">Nama Wajib Pajak</th>
+	            				<th style="width: 170px;">Nama Wajib Pajak</th>
 	            				<th>Alamat</th>
-	            				<th>Status</th>
-	            				<th style="width: 100px;">Pajak</th>
+	            				<th style="width: 170px;">Status Pembayaran</th>
+	            				<th style="width: 100px;">Nilai Pajak</th>
+	            				<th style="width: 125px;">Tgl. Transaksi</th>
 	            			</tr>
 	            		</thead>
 	            		<tbody>
@@ -192,11 +250,7 @@ class Pbb_Desa_Admin {
 		    ->where( 'post_type', '=', 'wajib_pajak' )
 	        ->add_fields( array(
 	            Field::make( 'select', 'crb_pbb_status_bayar', 'Status Pembayaran' )
-	            	->add_options(  array(
-	            		'' => 'Pilih Status Pembayaran',
-	            		'1' => 'Terbayar',
-	            		'0' => 'Belum Bayar'
-	            	) ),
+	            	->add_options(  $this->data_status_bayar() ),
 	            Field::make( 'date_time', 'crb_pbb_tgl_bayar', 'Tanggal Bayar' ),
 	            Field::make( 'text', 'crb_pbb_tahun_anggaran', 'Tahun Anggaran' ),
 	            Field::make( 'select', 'crb_pbb_petugas_pajak', 'Petugas Pajak' )
@@ -317,22 +371,29 @@ class Pbb_Desa_Admin {
 			        ),
         			'relation' => 'AND'
 			    ),
-			    'post_status' => 'private'
+			    'post_status' => 'private',
+			    'meta_key'  => '_crb_pbb_nop',
+			    'orderby'   => 'meta_value_num',
+			    'order' => 'ASC'
 			));
 			$data_all = array();
 			foreach ( $posts as $post ) {
-				$nilai = carbon_get_post_meta( $post->ID, 'crb_pbb_ketetapan_pbb' );
+				$nilai = get_post_meta( $post->ID, '_crb_pbb_ketetapan_pbb', true );
 				if(empty($nilai)){
 					$nilai = 0;
 				}
-				$status = get_post_meta( $post->ID, '_crb_pbb_status_bayar');
+				$status = get_post_meta( $post->ID, '_crb_pbb_status_bayar', true );
+				if(empty($status)){
+					$status = 0;
+				}
 				$data_all[] = array(
 					'post_id' => $post->ID,
-					'crb_pbb_nop'	=> carbon_get_post_meta( $post->ID, 'crb_pbb_nop' ),
-					'crb_pbb_nama_wp'	=> carbon_get_post_meta( $post->ID, 'crb_pbb_nama_wp' ),
-					'crb_pbb_alamat_op'	=> carbon_get_post_meta( $post->ID, 'crb_pbb_alamat_op' ),
-					'crb_pbb_status_bayar'	=> $status[0],
-					'crb_pbb_ketetapan_pbb'	=> 'Rp '.number_format($nilai,0,",",".")
+					'crb_pbb_nop'	=> get_post_meta( $post->ID, '_crb_pbb_nop', true ),
+					'crb_pbb_nama_wp'	=> get_post_meta( $post->ID, '_crb_pbb_nama_wp', true ),
+					'crb_pbb_alamat_op'	=> get_post_meta( $post->ID, '_crb_pbb_alamat_op', true ),
+					'crb_pbb_status_bayar'	=> $status,
+					'crb_pbb_ketetapan_pbb'	=> 'Rp '.number_format($nilai,0,",","."),
+					'crb_pbb_tgl'	=> get_post_meta( $post->ID, '_crb_pbb_tgl_bayar', true )
 				);
 		    }
 		    $ret['data'] = $data_all;

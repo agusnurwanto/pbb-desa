@@ -14,9 +14,15 @@ Semoga bermanfaat
 - Membuat manual atau mengimport data wajib pajak dari excel
 - Melakukan pembayaran berdasarkan petugas pajak
 - Print dan download excel laporan wajib pajak
+- Input data profil desa
+- Tambah role kepala desa & bendahara desa
+- Tambah status pembayaran (Belum Bayar, Diterima Petugas Pajak, Diterima Bendahara Desa, Diterima Kecamatan, Lunas)
 
 Permintaan fitur:
 - User umum bisa request penambahan fitur dengan membuat issue
+
+### Demo Aplikasi
+- Bisa dilihat di https://pbbdesa.maremjaya.com/
 
 ### Video Tutorial 
 - ...

@@ -196,10 +196,7 @@ jQuery(document).ready(function(){
                     +'</tr>';
                 if(res.status == 'success'){
                     res.data.map(function(b, i){
-                        var status = '<span style="color: red;">Belum Bayar</span>';
-                        if(b.crb_pbb_status_bayar == 1){
-                            status = '<span style="color: green;">Terbayar</span>';
-                        }
+                        status = pbb.status_bayar[b.crb_pbb_status_bayar];
                         var checked = '';
                         if(typeof data_id_post != 'undefined'){
                             data_id_post.map(function(m, n){
@@ -210,13 +207,14 @@ jQuery(document).ready(function(){
                         }
                         data_wp += ''
                             +'<tr>'
-                                +'<td><input type="checkbox" data-post-id="'+b.post_id+'" '+checked+'></td>'
-                                +'<td style="text-align: right;">'+(i+1)+'</td>'
-                                +'<td>'+b.crb_pbb_nop+'</td>'
+                                +'<td class="text_tengah"><input type="checkbox" data-post-id="'+b.post_id+'" '+checked+'></td>'
+                                +'<td class="text_tengah" style="text-align: right;">'+(i+1)+'</td>'
+                                +'<td class="text_tengah">'+b.crb_pbb_nop+'</td>'
                                 +'<td>'+b.crb_pbb_nama_wp+'</td>'
                                 +'<td>'+b.crb_pbb_alamat_op+'</td>'
                                 +'<td style="width: 100px;">'+status+'</td>'
                                 +'<td>'+b.crb_pbb_ketetapan_pbb+'</td>'
+                                +'<td class="text_tengah">'+b.crb_pbb_tgl+'</td>'
                             +'</tr>';
                     });
                     if(data_wp == ''){
