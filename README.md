@@ -17,6 +17,7 @@ Semoga bermanfaat
 - Input data profil desa
 - Tambah role kepala desa & bendahara desa
 - Tambah status pembayaran (Belum Bayar, Diterima Petugas Pajak, Diterima Bendahara Desa, Diterima Kecamatan, Lunas)
+- Tambah notifikasi whatsapp
 
 Permintaan fitur:
 - User umum bisa request penambahan fitur dengan membuat issue
@@ -25,7 +26,7 @@ Permintaan fitur:
 - Bisa dilihat di https://pbbdesa.maremjaya.com/
 
 ### Video Tutorial 
-- ...
+- https://youtu.be/yi2nQsTsAtU (Aplikasi PBB Desa Open Source Dengan Notifikasi WhatsApp)
 
 ### HARUS Update php.ini
 Optimasi server apache agar proses import data wajib pajak dari excel berjalan lancar (edit file php.ini):

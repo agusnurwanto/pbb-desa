@@ -552,7 +552,7 @@ class Pbb_Desa_Admin {
 							$nop,
 							$status_bayar_wp,
 							$tgl_bayar,
-							get_permalink($post_id).'?key='.$this->gen_key(false, true)
+							$this->get_link_post($post_id, true)
 						), $pesan);
 						$this->send_notif_wa(array(
 							'number' => $no_wp,
@@ -793,7 +793,7 @@ class Pbb_Desa_Admin {
 							'Lunas: *Rp '.number_format($total_lunas,0,",",".").'*'.
 							PHP_EOL.
 							PHP_EOL.
-							'Informasi lebih detail bisa dilihat di *'.get_permalink($custom_post).'?key='.$this->gen_key(false, true).'*';
+							'Informasi lebih detail bisa dilihat di *'.$this->get_link_post($custom_post, true).'*';
 
 						$this->send_notif_wa(array(
 							'number' => $pengirim,
@@ -806,6 +806,16 @@ class Pbb_Desa_Admin {
 		}
 		die($file);
     }
+
+    public function get_link_post($custom_post, $forever = false){
+		$link = get_permalink($custom_post);
+		if(strpos($link, '?') === false){
+			$link .= '?key=' . $this->gen_key(false, $forever);
+		}else{
+			$link .= '&key=' . $this->gen_key(false, $forever);
+		}
+		return $link;
+	}
 
 	public function crb_edit_save($save, $value, $field){
 		if($field->get_name() == '_crb_pbb_tahun_anggaran'){
