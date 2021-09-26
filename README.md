@@ -18,6 +18,8 @@ Semoga bermanfaat
 - Tambah role kepala desa & bendahara desa
 - Tambah status pembayaran (Belum Bayar, Diterima Petugas Pajak, Diterima Bendahara Desa, Diterima Kecamatan, Lunas)
 - Tambah notifikasi whatsapp
+- Tambah laporan harian, mingguan & bulanan
+- Tambah filter laporan sesuai tanggal yang dipilih
 
 Permintaan fitur:
 - User umum bisa request penambahan fitur dengan membuat issue
