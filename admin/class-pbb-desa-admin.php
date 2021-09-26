@@ -160,7 +160,10 @@ class Pbb_Desa_Admin {
 		);
 		$users = get_users( $args );
 		$list = array('' => 'Pilih Petugas');
-		$list_html = '<option value="">Pilih Petugas</option>';
+		$list_html = '
+			<option value="">Pilih Petugas</option>
+			<option value="all">Semua Wajib Pajak</option>
+		';
 		foreach ( $users as $user ) {
 		    $list[$user->ID] = esc_html( $user->display_name ) . ' (' . esc_html( $user->user_email ) . ')';
 		    $list_html .= '<option value="'.$user->ID.'">'.$list[$user->ID].'</option>';
@@ -242,43 +245,58 @@ class Pbb_Desa_Admin {
 		        		<style>
 		        			.postbox-container { display: none; }
 		        			#poststuff #post-body.columns-2 { margin: 0 !important; }
+		        			#table-pembayaran-pbb tfoot tr td, #table-pembayaran-pbb tfoot tr th, #table-pembayaran-pbb thead tr td, #table-pembayaran-pbb thead tr th { box-sizing: border-box; }
 		        		</style>
 		        	' ),
 		        Field::make( 'html', 'crb_referensi_html' )
-	            	->set_html( 'Referensi: <a target="_blank" href="https://www.youtube.com/watch?v=UIGDx_6XRV8">https://www.youtube.com/watch?v=UIGDx_6XRV8</a>' ),
+	            	->set_html( 'Referensi: <a target="_blank" href="https://www.youtube.com/watch?v=yi2nQsTsAtU">https://www.youtube.com/watch?v=yi2nQsTsAtU</a>' ),
 		        Field::make( 'html', 'crb_pilih_tahun_html' )
-	            	->set_html( 'Tahun Anggaran : <input type="number" id="tahun_anggaran" value="'.date('Y').'">' ),
-		        Field::make( 'html', 'crb_petugas_html' )
-	            	->set_html( 'Pilih Petugas Pajak : <select id="petugas_pajak_bayar" style="min-width: 250px;">'.$list_html.'</select>' ),
+	            	->set_html( '
+	            		Tahun Anggaran : <input type="number" id="tahun_anggaran" value="'.date('Y').'" style="margin-right: 20px;">
+	            		Pilih Petugas Pajak : <select id="petugas_pajak_bayar" style="min-width: 250px;">'.$list_html.'</select>' ),
 		        Field::make( 'html', 'crb_status_bayar_html' )
 	            	->set_html( '
 	            		Ubah status bayar : 
-	            		<select id="status_bayar" style="min-width: 250px;">
+	            		<select id="status_bayar" style="min-width: 250px; margin-right: 20px;">
 	            			'.$this->data_status_bayar(array('type' => 'html')).'
 	            		</select>
-	            ' ),
-		        Field::make( 'html', 'crb_aksi_html' )
-	            	->set_html( '
 	            		<a onclick="bayar_pajak(); return false" href="javascript:void(0);" class="button button-primary">Simpan Status Pajak</a>
-	            		<a onclick="print_pajak(); return false" href="javascript:void(0);" class="button button-secondary">Print Laporan Pajak</a>' ),
+	            ' ),
+		        Field::make( 'html', 'crb_print_html' )
+	            	->set_html( ' Pilih Format Laporan : 
+	            		<select id="format-laporan-pajak" style="min-width: 250px; margin-right: 20px;">
+	            			<option value="">Laporan</option>
+	            			<option value="4">Print Laporan Terpilih</option>
+	            			<option value="1">Print Laporan Harian</option>
+	            			<option value="2">Print Laporan Mingguan</option>
+	            			<option value="3">Print Laporan Bulanan</option>
+	            		</select>
+	            		<a onclick="print_pajak(); return false" href="javascript:void(0);" class="button button-secondary">Print Laporan</a>
+	            		<div id="filter-tanggal-pbb" style="display:none; margin-top: 10px;">
+	            			<label class="tgl_harian">Pilih Hari <input type="date"/></label>
+	            			<label class="start_date" style="margin-right: 20px;">Pilih Tanggal Mulai <input type="date"/></label>
+	            			<label class="end_date">Pilih Tanggal Akhir <input type="date"/></label>
+	            		</div>
+	            	' ),
 		        Field::make( 'html', 'crb_wp_html' )
 	            	->set_html( '
 	            	<table id="table-pembayaran-pbb" class="wp-list-table widefat fixed striped table-view-list">
 	            		<thead>
 	            			<tr>
-	            				<th style="width: 40px;"><input type="checkbox" id="select-all" style="margin:0;"></th>
-	            				<th style="width: 20px;">No</th>
+	            				<th style="width: 35px;"><input type="checkbox" id="select-all" style="margin:0;"></th>
+	            				<th style="width: 45px;">No</th>
 	            				<th style="width: 170px;">No. Object Pajak</th>
 	            				<th style="width: 170px;">Nama Wajib Pajak</th>
 	            				<th>Alamat</th>
 	            				<th style="width: 170px;">Status Pembayaran</th>
 	            				<th style="width: 100px;">Nilai Pajak</th>
 	            				<th style="width: 125px;">Tgl. Transaksi</th>
+	            				<th style="width: 125px;">Nama Petugas</th>
 	            			</tr>
 	            		</thead>
 	            		<tbody>
 	            			<tr>
-	            				<td colspan="6" style="text-align: center;">Data Kosong!</td>
+	            				<td colspan="9" style="text-align: center;">Data Kosong!</td>
 	            			</tr>
 	            		</tbody>
 	            	</table>' )
@@ -295,7 +313,7 @@ class Pbb_Desa_Admin {
 		        		</style>
 		        	' ),
 		        Field::make( 'html', 'crb_referensi_html' )
-	            	->set_html( 'Video Referensi: <a target="_blank" href="https://www.youtube.com/watch?v=UIGDx_6XRV8">https://www.youtube.com/watch?v=UIGDx_6XRV8</a>' ),
+	            	->set_html( 'Video Referensi: <a target="_blank" href="https://www.youtube.com/watch?v=yi2nQsTsAtU">https://www.youtube.com/watch?v=yi2nQsTsAtU</a>' ),
 		        Field::make( 'html', 'crb_pilih_tahun_html' )
 	            	->set_html( 'Tahun Anggaran : <input type="number" id="tahun_anggaran" value="'.date('Y').'">' ),
 		        Field::make( 'html', 'crb_petugas_html' )
@@ -425,22 +443,26 @@ class Pbb_Desa_Admin {
 			'message'	=> 'Berhasil get wajib pajak!'
 		);
 		if (!empty($_POST)) {
+			$filter_query = array(
+		        array(
+		            'key'   => '_crb_pbb_tahun_anggaran',
+		            'value' => $_POST['tahun_anggaran']
+		        )
+		    );
+		    if(
+		    	empty($_POST['petugas_pajak']) 
+		    	|| $_POST['petugas_pajak'] != 'all'
+		    ){
+		    	$filter_query[] = array(
+		            'key'   => '_crb_pbb_petugas_pajak',
+		            'value' => $_POST['petugas_pajak'],
+		        );
+		    	$filter_query['relation'] = 'AND';
+		    }
 			$posts = get_posts(array( 
 				'numberposts'	=> -1,
-				// 'posts_per_page'	=> 50,
-        		// 'offset'	=> 0,
 				'post_type' => 'wajib_pajak', 
-				'meta_query' => array(
-			        array(
-			            'key'   => '_crb_pbb_petugas_pajak',
-			            'value' => $_POST['petugas_pajak'],
-			        ),
-			        array(
-			            'key'   => '_crb_pbb_tahun_anggaran',
-			            'value' => $_POST['tahun_anggaran']
-			        ),
-        			'relation' => 'AND'
-			    ),
+				'meta_query' => $filter_query,
 			    'post_status' => 'private',
 			    'meta_key'  => '_crb_pbb_nop',
 			    'orderby'   => 'meta_value_num',
@@ -458,6 +480,10 @@ class Pbb_Desa_Admin {
 				}
 				$nop = get_post_meta( $post->ID, '_crb_pbb_nop', true );
 				$nama_wp = get_post_meta( $post->ID, '_crb_pbb_nama_wp', true );
+				$user_id = get_post_meta( $post->ID, '_crb_pbb_petugas_pajak', true );
+
+				$user_info = get_userdata($user_id);
+				$nama_petugas = $user_info->display_name;
 				$data_all[] = array(
 					'post_id' => $post->ID,
 					'crb_pbb_nop'	=> $nop,
@@ -466,7 +492,8 @@ class Pbb_Desa_Admin {
 					'crb_pbb_status_bayar'	=> $status,
 					'crb_pbb_ketetapan_pbb'	=> 'Rp '.number_format($nilai,0,",","."),
 					'crb_pbb_tgl'	=> get_post_meta( $post->ID, '_crb_pbb_tgl_bayar', true ),
-					'crb_pbb_url'	=> get_permalink( $post )
+					'crb_pbb_url'	=> get_permalink( $post ),
+					'crb_display_name'	=> $nama_petugas
 				);
 		    }
 		    $ret['data'] = $data_all;

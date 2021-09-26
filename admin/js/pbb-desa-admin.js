@@ -130,26 +130,155 @@ function get_data_list(){
 }
 
 function print_pajak(){
-    var tahun_anggaran = jQuery('#tahun_anggaran').val();
-    get_data_list();
-    if(data_id_post.length == 0){
-        alert('Pilih wajib pajak dulu!');
+    var type_laporan = jQuery('#format-laporan-pajak').val();
+    if(type_laporan == ''){
+        return alert('Pilih format laporan dulu!');
     }else{
-        jQuery('#wrap-loading').show();
-        jQuery.ajax({
-            url: ajaxurl,
-            type: 'post',
-            data: {
-                action: 'get_url_print_pbb',
-                tahun_anggaran: tahun_anggaran
-            },
-            success: function(res){
-                jQuery('#wrap-loading').hide();
-                res = JSON.parse(res);
-                window.open(res.url+'?data_list='+data_id_post.join(','), '_blank').focus();
+        var tahun_anggaran = jQuery('#tahun_anggaran').val();
+        if(type_laporan == 4){
+            get_data_list();
+            if(data_id_post.length == 0){
+                alert('Pilih wajib pajak dulu!');
+            }else{
+                jQuery('#wrap-loading').show();
+                jQuery.ajax({
+                    url: ajaxurl,
+                    type: 'post',
+                    data: {
+                        action: 'get_url_print_pbb',
+                        tahun_anggaran: tahun_anggaran
+                    },
+                    success: function(res){
+                        jQuery('#wrap-loading').hide();
+                        res = JSON.parse(res);
+                        window.open(res.url+'?data_list='+data_id_post.join(','), '_blank').focus();
+                    }
+                });
             }
-        });
+        }else if(
+            type_laporan == 1
+            || type_laporan == 2
+            || type_laporan == 3
+        ){
+            jQuery('#wrap-loading').show();
+            if(type_laporan == 1){
+                var tgl_awal = jQuery('.tgl_harian input').val();
+                var tgl_akhir = tgl_awal;
+            }else{
+                var tgl_awal = jQuery('.start_date input').val();
+                var tgl_akhir = jQuery('.end_date input').val();
+            }
+            var data_id_post_tgl = [];
+            jQuery('#table-pembayaran-pbb tr td.tgl_transaksi').map(function(i, b){
+                var tgl_transaksi = jQuery(b).text().split(' ')[0];
+                if(type_laporan == 1 && tgl_awal == tgl_transaksi){
+                    var tr = jQuery(b).closest('tr');
+                    var id = tr.find('td input[type="checkbox"]').attr('data-post-id');
+                    data_id_post_tgl.push(id);
+                }else{
+                    tgl_transaksi = new Date(tgl_transaksi).getTime();
+                    tgl_awal = new Date(tgl_awal).getTime();
+                    tgl_akhir = new Date(tgl_akhir).getTime();
+                    if(tgl_transaksi >= tgl_awal && tgl_transaksi <= tgl_akhir){
+                        var tr = jQuery(b).closest('tr');
+                        var id = tr.find('td input[type="checkbox"]').attr('data-post-id');
+                        data_id_post_tgl.push(id);
+                    }
+                }
+            });
+            if(data_id_post_tgl.length == 0){
+                jQuery('#wrap-loading').hide();
+                return alert('Data sesuai filter tanggal tidak ditemukan!');
+            }else{
+                jQuery.ajax({
+                    url: ajaxurl,
+                    type: 'post',
+                    data: {
+                        action: 'get_url_print_pbb',
+                        tahun_anggaran: tahun_anggaran
+                    },
+                    success: function(res){
+                        jQuery('#wrap-loading').hide();
+                        res = JSON.parse(res);
+                        window.open(res.url+'?data_list='+data_id_post_tgl.join(','), '_blank').focus();
+                    }
+                });
+            }
+        }
     }
+}
+
+function get_wajib_pajak(){
+    jQuery('#wrap-loading').show();
+    get_data_list();
+    var tahun_anggaran = jQuery('#tahun_anggaran').val();
+    var petugas_pajak = jQuery('#petugas_pajak_bayar').val();
+    jQuery.ajax({
+        url: ajaxurl,
+        type: 'post',
+        data: {
+            action: 'get_wajib_pajak',
+            tahun_anggaran: tahun_anggaran,
+            petugas_pajak: petugas_pajak
+        },
+        success: function(res){
+            res = JSON.parse(res);
+            var data_wp = '';
+            var data_wp_kosong = ''
+                +'<tr>'
+                    +'<td colspan="9" style="text-align: center;">Data Kosong!</td>'
+                +'</tr>';
+            if(res.status == 'success'){
+                res.data.map(function(b, i){
+                    status = pbb.status_bayar[b.crb_pbb_status_bayar];
+                    var checked = '';
+                    if(typeof data_id_post != 'undefined'){
+                        data_id_post.map(function(m, n){
+                            if(m == b.post_id){
+                                checked = 'checked';
+                            }
+                        });
+                    }
+                    data_wp += ''
+                        +'<tr>'
+                            +'<td class="text_tengah"><input type="checkbox" data-post-id="'+b.post_id+'" '+checked+'></td>'
+                            +'<td class="text_tengah" style="text-align: right;">'+(i+1)+'</td>'
+                            +'<td class="text_tengah"><a href="'+b.crb_pbb_url+'" target="blank">'+b.crb_pbb_nop+'</a></td>'
+                            +'<td>'+b.crb_pbb_nama_wp+'</td>'
+                            +'<td>'+b.crb_pbb_alamat_op+'</td>'
+                            +'<td style="width: 100px;">'+status+'</td>'
+                            +'<td>'+b.crb_pbb_ketetapan_pbb+'</td>'
+                            +'<td class="text_tengah tgl_transaksi">'+b.crb_pbb_tgl+'</td>'
+                            +'<td class="text_tengah">'+b.crb_display_name+'</td>'
+                        +'</tr>';
+                });
+                if(data_wp == ''){
+                    data_wp += data_wp_kosong;
+                }
+            }else{
+                data_wp += data_wp_kosong;
+                alert(res.message);
+            }
+            jQuery('#table-pembayaran-pbb tbody').html(data_wp);
+            jQuery('#wrap-loading').hide();
+        }
+    });
+}
+
+function cek_null(number, length){
+    number = ''+number;
+    if(number.length < length){
+        var new_number = [];
+        for(var i=length-1; i>=0; i--){
+            if(typeof number[i] == 'undefined'){
+                new_number.push('0');
+            }else{
+                new_number.push(number[i]);
+            }
+        }
+        number = new_number.join('');
+    }
+    return number;
 }
 
 jQuery(document).ready(function(){
@@ -170,58 +299,42 @@ jQuery(document).ready(function(){
         }
     });
     jQuery('#petugas_pajak_bayar').on('change', function(){
-        jQuery('#wrap-loading').show();
-        get_data_list();
-        var tahun_anggaran = jQuery('#tahun_anggaran').val();
-        var petugas_pajak = jQuery(this).val();
-        jQuery.ajax({
-            url: ajaxurl,
-            type: 'post',
-            data: {
-                action: 'get_wajib_pajak',
-                tahun_anggaran: tahun_anggaran,
-                petugas_pajak: petugas_pajak
-            },
-            success: function(res){
-                res = JSON.parse(res);
-                var data_wp = '';
-                var data_wp_kosong = ''
-                    +'<tr>'
-                        +'<td colspan="6" style="text-align: center;">Data Kosong!</td>'
-                    +'</tr>';
-                if(res.status == 'success'){
-                    res.data.map(function(b, i){
-                        status = pbb.status_bayar[b.crb_pbb_status_bayar];
-                        var checked = '';
-                        if(typeof data_id_post != 'undefined'){
-                            data_id_post.map(function(m, n){
-                                if(m == b.post_id){
-                                    checked = 'checked';
-                                }
-                            });
-                        }
-                        data_wp += ''
-                            +'<tr>'
-                                +'<td class="text_tengah"><input type="checkbox" data-post-id="'+b.post_id+'" '+checked+'></td>'
-                                +'<td class="text_tengah" style="text-align: right;">'+(i+1)+'</td>'
-                                +'<td class="text_tengah"><a href="'+b.crb_pbb_url+'" target="blank">'+b.crb_pbb_nop+'</a></td>'
-                                +'<td>'+b.crb_pbb_nama_wp+'</td>'
-                                +'<td>'+b.crb_pbb_alamat_op+'</td>'
-                                +'<td style="width: 100px;">'+status+'</td>'
-                                +'<td>'+b.crb_pbb_ketetapan_pbb+'</td>'
-                                +'<td class="text_tengah">'+b.crb_pbb_tgl+'</td>'
-                            +'</tr>';
-                    });
-                    if(data_wp == ''){
-                        data_wp += data_wp_kosong;
-                    }
-                }else{
-                    data_wp += data_wp_kosong;
-                    alert(res.message);
-                }
-                jQuery('#table-pembayaran-pbb tbody').html(data_wp);
-                jQuery('#wrap-loading').hide();
-            }
-        });
+        get_wajib_pajak();
+    });
+    jQuery('#format-laporan-pajak').on('change', function(){
+        jQuery('#filter-tanggal-pbb').hide();
+        jQuery('#filter-tanggal-pbb label').hide();
+        var type_laporan = jQuery(this).val();
+        var date = new Date();
+        if(type_laporan == 1){
+            var today = date.getFullYear()+'-'+cek_null(date.getMonth()+1, 2)+'-'+date.getDate();
+            jQuery('#filter-tanggal-pbb').show();
+            jQuery('#filter-tanggal-pbb .tgl_harian').show();
+            jQuery('.tgl_harian input').val(today);
+        }else if(type_laporan == 2){
+            // Ubah start day mingguan di hari senin. secara default adalah hari minggu
+            var start_day = ((date.getDay()+6)%7);
+            var first = date.getDate() - start_day;
+            var last = first + 6;
+
+            var firstday = new Date(date.setDate(first));
+            var lastday = new Date(date.setDate(last));
+            var firstday = firstday.getFullYear()+'-'+cek_null(firstday.getMonth()+1, 2)+'-'+firstday.getDate();
+            var lastday = lastday.getFullYear()+'-'+cek_null(lastday.getMonth()+1, 2)+'-'+lastday.getDate();
+            jQuery('#filter-tanggal-pbb').show();
+            jQuery('#filter-tanggal-pbb .start_date').show();
+            jQuery('#filter-tanggal-pbb .end_date').show();
+            jQuery('.start_date input').val(firstday);
+            jQuery('.end_date input').val(lastday);
+        }else if(type_laporan == 3){
+            var start_month = date.getFullYear()+'-'+cek_null(date.getMonth()+1, 2)+'-01';
+            var lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+            var end_month = lastDay.getFullYear()+'-'+cek_null(lastDay.getMonth()+1, 2)+'-'+lastDay.getDate();
+            jQuery('#filter-tanggal-pbb').show();
+            jQuery('#filter-tanggal-pbb .start_date').show();
+            jQuery('#filter-tanggal-pbb .end_date').show();
+            jQuery('.start_date input').val(start_month);
+            jQuery('.end_date input').val(end_month);
+        }
     });
 });
