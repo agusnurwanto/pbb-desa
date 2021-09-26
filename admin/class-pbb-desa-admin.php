@@ -522,6 +522,7 @@ class Pbb_Desa_Admin {
 		curl_setopt($ch, CURLOPT_TIMEOUT, 0);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
 		    "device-key: $device_key",
 		    'Content-Type: application/x-www-form-urlencoded'
