@@ -370,7 +370,9 @@ class Pbb_Desa_Admin {
 	            'public' => true,
 	            'has_archive' => true,
 	            'rewrite' => array('slug' => 'wajib_pajak'),
-	            'show_in_rest' => true
+	            'show_in_rest' => true,
+	            'show_in_menu' => true,
+	            'menu_position' => 4
 	        )
 	    );
 	}
