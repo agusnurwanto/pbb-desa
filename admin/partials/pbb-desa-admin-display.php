@@ -7,7 +7,7 @@ $body = '<tr><td colspan="8" class="text_tengah">Data kosong. Harap pilih dulu d
 if(!empty($_GET['data_list'])){
 	$list = explode(',', $_GET['data_list']);
 	$data_status = $this->data_status_bayar();
-	$body = '';
+	$body = [];
 	foreach ($list as $k => $id_post) {
 		$post = get_post($id_post);
 		$nop = get_post_meta( $id_post, '_crb_pbb_nop', true );
@@ -29,7 +29,7 @@ if(!empty($_GET['data_list'])){
 		if($status_bayar >= 1){
 			$tgl_bayar = get_post_meta( $id_post, '_crb_pbb_tgl_bayar', true );
 		}
-		$body .= '
+		$body[date($tgl_bayar)] = '
 		<tr>
 			<td class="text_tengah">'.($k+1).'</td>
 			<td class="text_tengah">'.$nop.'</td>
@@ -42,10 +42,18 @@ if(!empty($_GET['data_list'])){
 		</tr>
 		';
 	}
+	krsort($body);
+	$body = implode('', $body);
+
+	$judul = '';
+	if(!empty($_GET['judul'])){
+		$judul = '<h2 style="text-align: center; text-transform: uppercase;">'.htmlentities(urldecode($_GET['judul'])).'</h2>';
+	}
 }
 ?>
 <div id="cetak">
 	<h1 style='text-align: center;'>DAFTAR NAMA PELUNASAN PBB TAHUN <?php echo $input['tahun_anggaran']; ?></h1>
+	<?php echo $judul; ?>
 	<table>
 		<thead>
 			<tr>

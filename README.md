@@ -18,6 +18,7 @@ Semoga bermanfaat
 - Tambah role kepala desa & bendahara desa
 - Tambah status pembayaran (Belum Bayar, Diterima Petugas Pajak, Diterima Bendahara Desa, Diterima Kecamatan, Lunas)
 - Tambah notifikasi whatsapp
+- Support WA Multi Device by http://woo-wa.com/
 - Tambah laporan harian, mingguan & bulanan
 - Tambah filter laporan sesuai tanggal yang dipilih
 
@@ -29,6 +30,7 @@ Permintaan fitur:
 
 ### Video Tutorial 
 - https://youtu.be/yi2nQsTsAtU (Aplikasi PBB Desa Open Source Dengan Notifikasi WhatsApp)
+- https://youtu.be/sSKAtJt_Sis (PBB Desa Fitur Print Laporan Harian, Mingguan dan Bulanan)
 
 ### HARUS Update php.ini
 Optimasi server apache agar proses import data wajib pajak dari excel berjalan lancar (edit file php.ini):

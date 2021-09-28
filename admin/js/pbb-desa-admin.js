@@ -168,6 +168,15 @@ function print_pajak(){
                 var tgl_awal = jQuery('.start_date input').val();
                 var tgl_akhir = jQuery('.end_date input').val();
             }
+            
+            var judul = '';
+            if(type_laporan == 1){
+                judul = 'Laporan Harian Tanggal '+tgl_awal;
+            }else if(type_laporan == 2){
+                judul = 'Laporan Mingguan, Tanggal Awal '+tgl_awal+' dan Tanggal Akhir '+tgl_akhir;
+            }else if(type_laporan == 3){
+                judul = 'Laporan Bulanan, Tanggal Awal '+tgl_awal+' dan Tanggal Akhir '+tgl_akhir;
+            }
             var data_id_post_tgl = [];
             jQuery('#table-pembayaran-pbb tr td.tgl_transaksi').map(function(i, b){
                 var tgl_transaksi = jQuery(b).text().split(' ')[0];
@@ -200,7 +209,7 @@ function print_pajak(){
                     success: function(res){
                         jQuery('#wrap-loading').hide();
                         res = JSON.parse(res);
-                        window.open(res.url+'?data_list='+data_id_post_tgl.join(','), '_blank').focus();
+                        window.open(res.url+'?data_list='+data_id_post_tgl.join(',')+'&judul='+judul, '_blank').focus();
                     }
                 });
             }
