@@ -101,7 +101,7 @@ class Pbb_Desa_Admin {
 
 		wp_enqueue_script( $this->plugin_name.'jszip', plugin_dir_url( __FILE__ ) . 'js/jszip.js', array( 'jquery' ), $this->version, false );
 		wp_enqueue_script( $this->plugin_name.'xlsx', plugin_dir_url( __FILE__ ) . 'js/xlsx.js', array( 'jquery' ), $this->version, false );
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/pbb-desa-admin.js', array( 'jquery' ), $this->version, false );
+		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/pbb-desa-admin.js', array( 'jquery' ), $this->version.'.'.time(), false );
 		wp_localize_script( $this->plugin_name, 'pbb', array(
 		    'status_bayar' => $this->data_status_bayar(array('type' => 'html_color'))
 		));
@@ -319,7 +319,7 @@ class Pbb_Desa_Admin {
 		        Field::make( 'html', 'crb_petugas_html' )
 	            	->set_html( 'Pilih Petugas Pajak : <select id="petugas_pajak" style="min-width: 250px;">'.$list_html.'</select>' ),
 		        Field::make( 'html', 'crb_upload_html' )
-	            	->set_html( 'Pilih file excel .xlsx : <input type="file" id="file-excel" onchange="filePicked(event);"><br>Contoh format file excel bisa <a target="_blank" href="'.plugin_dir_url( __FILE__ ) . 'excel/contoh.xlsx">download di sini</a>.' ),
+	            	->set_html( 'Pilih file excel .xlsx : <input type="file" id="file-excel" onchange="filePicked(event);"><br>Contoh format file excel bisa <a target="_blank" href="'.plugin_dir_url( __FILE__ ) . 'excel/contoh.xlsx">download di sini</a>. Sheet file excel yang akan diimport harus diberi nama <b>data</b>. Untuk kolom nilai pajak (<b>KETETAPAN_PBB</b>) ditulis tanpa tanda titik.' ),
 		        Field::make( 'html', 'crb_textarea_html' )
 	            	->set_html( 'Data JSON : <textarea id="data-excel" class="cf-select__input"></textarea>' ),
 		        Field::make( 'html', 'crb_save_button' )

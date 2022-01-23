@@ -12,17 +12,29 @@ function filePicked(oEvent) {
             type: 'binary'
         });
 
+        var cek_sheet_name = false;
         workbook.SheetNames.forEach(function(sheetName) {
             // Here is your object
-            var XL_row_object = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
-            var data = [];
-            XL_row_object.map(function(b, i){
-                data.push(b);
-            });
-            var json_object = JSON.stringify(data);
-            jQuery('#data-excel').val(json_object);
-            jQuery('#wrap-loading').hide();
+            console.log('sheetName', sheetName);
+            if(sheetName == 'data'){
+                cek_sheet_name = true;
+                var XL_row_object = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
+                var data = [];
+                XL_row_object.map(function(b, i){
+                    data.push(b);
+                });
+                var json_object = JSON.stringify(data);
+                jQuery('#data-excel').val(json_object);
+                jQuery('#wrap-loading').hide();
+            }
         });
+        setTimeout(function(){
+            if(false == cek_sheet_name){
+                jQuery('#data-excel').val('');
+                alert('Sheet dengan nama "data" tidak ditemukan!');
+                jQuery('#wrap-loading').hide();
+            }
+        }, 2000);
     };
 
     reader.onerror = function(ex) {
@@ -32,8 +44,36 @@ function filePicked(oEvent) {
     reader.readAsBinaryString(oFile);
 }
 
+function relayAjax(options, retries=20, delay=5000, timeout=90000){
+    options.timeout = timeout;
+    options.cache = false;
+    jQuery.ajax(options)
+    .fail(function(jqXHR, exception){
+        // console.log('jqXHR, exception', jqXHR, exception);
+        if(
+            jqXHR.status != '0' 
+            && jqXHR.status != '503'
+            && jqXHR.status != '500'
+        ){
+            if(jqXHR.responseJSON){
+                options.success(jqXHR.responseJSON);
+            }else{
+                options.success(jqXHR.responseText);
+            }
+        }else if (retries > 0) {
+            console.log('Koneksi error. Coba lagi '+retries, options);
+            var new_delay = Math.random() * (delay/1000);
+            setTimeout(function(){ 
+                relayAjax(options, --retries, delay, timeout);
+            }, new_delay * 1000);
+        } else {
+            alert('Capek. Sudah dicoba berkali-kali error terus. Maaf, berhenti mencoba.');
+        }
+    });
+}
+
 function import_excel(){
-	var data = jQuery('#data-excel').val();
+    var data = jQuery('#data-excel').val();
     var tahun_anggaran = jQuery('#tahun_anggaran').val();
     var petugas_pajak = jQuery('#petugas_pajak').val();
     if(!data){
@@ -44,7 +84,7 @@ function import_excel(){
 
         var data_all = [];
         var data_sementara = [];
-        var max = 250;
+        var max = 100;
         data.map(function(b, i){
             data_sementara.push(b);
             if(data_sementara.length%max == 0){
@@ -55,30 +95,38 @@ function import_excel(){
         if(data_sementara.length > 0){
             data_all.push(data_sementara);
         }
-        var sendData = data_all.map(function(b, i){
-            return new Promise(function(resolve_redurce, reject_redurce){
-                jQuery.ajax({
-                    url: ajaxurl,
-                    type: 'post',
-                    data: {
-                        action: 'import_excel',
-                        tahun_anggaran: tahun_anggaran,
-                        petugas_pajak: petugas_pajak,
-                        data: b
-                    },
-                    success: function(res){
-                        resolve_redurce(true);
-                    }
+        var last = data_all.length - 1;
+        data_all.reduce(function(sequence, nextData){
+            return sequence.then(function(current_data){
+                return new Promise(function(resolve_reduce, reject_reduce){
+                    relayAjax({
+                        url: ajaxurl,
+                        type: 'post',
+                        data: {
+                            action: 'import_excel',
+                            tahun_anggaran: tahun_anggaran,
+                            petugas_pajak: petugas_pajak,
+                            data: current_data
+                        },
+                        success: function(res){
+                            resolve_reduce(nextData);
+                        },
+                        error: function(e){
+                            console.log('Error import excel', e);
+                        }
+                    });
+                })
+                .catch(function(e){
+                    console.log(e);
+                    return Promise.resolve(nextData);
                 });
             })
             .catch(function(e){
                 console.log(e);
-                return Promise.resolve(true);
+                return Promise.resolve(nextData);
             });
-        });
-
-        Promise.all(sendData)
-        .then(function(val_all){
+        }, Promise.resolve(data_all[last]))
+        .then(function(data_last){
             jQuery('#wrap-loading').hide();
             alert('Success import wajib pajak dari excel!');
         })
