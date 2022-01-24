@@ -550,11 +550,16 @@ class Pbb_Desa_Admin {
 			$status_bayar = $this->data_status_bayar();
 			$nilai_total = 0;
 			$status_bayar_wp = '';
+			$petugas_pajak_all = array();
 			foreach ($_POST['data'] as $k => $post_id) {
 				update_post_meta( $post_id, '_crb_pbb_status_bayar', $_POST['status'] );
 				update_post_meta( $post_id, '_crb_pbb_tgl_bayar', $tgl_bayar );
 				
 				if($status_notif_wa == 1){
+					$petugas_pajak = get_post_meta($post_id, '_crb_pbb_petugas_pajak', true);
+					if(empty($petugas_pajak_all[$petugas_pajak])){
+						$petugas_pajak_all[$petugas_pajak] = array();
+					}
 					$nama = get_post_meta( $post_id, '_crb_pbb_nama_wp', true );
 					$nilai = get_post_meta( $post_id, '_crb_pbb_ketetapan_pbb', true );
 					$nop = get_post_meta( $post_id, '_crb_pbb_nop', true );
@@ -563,9 +568,15 @@ class Pbb_Desa_Admin {
 					}
 					$nilai_total += $nilai;
 					$status_bayar_wp = $status_bayar[$_POST['status']];
-					$data_bayar[] = 'a/n '.$nama.' | NOP. '.$nop.' | Rp '.number_format($nilai,0,",",".");
+					$keterangan_pajak = 'a/n '.$nama.' | NOP. '.$nop.' | Rp '.number_format($nilai,0,",",".");
+					$data_bayar[] = $keterangan_pajak;
+					$petugas_pajak_all[$petugas_pajak][] = array(
+						'keterangan' => $keterangan_pajak,
+						'nilai' => $nilai
+					);
 				}
 
+				// kirim notif WA ke wajib pajak
 				$status_notif_wa_wp = get_post_meta($post_id, '_crb_pbb_notifikasi_wa', true);
 				if($status_notif_wa_wp == 1){
 					$no_wp = get_post_meta($post_id, '_crb_pbb_no_wa', true);
@@ -591,26 +602,78 @@ class Pbb_Desa_Admin {
 					}
 				}
 			}
+			/*
+			$data = array(
+	    		'' => 'Pilih Status Pembayaran',
+	    		'0' => 'Belum Bayar',
+	    		'1' => 'Diterima Petugas Pajak',
+	    		'2' => 'Diterima Bendahara Desa',
+	    		'3' => 'Diterima Kecamatan',
+	    		'4' => 'Lunas'
+	    	);
+	    	*/
 			if($status_notif_wa == 1){
+				$pesan = get_option('_crb_pbb_template_notifikasi_wa_bendahara');
+				$pesan = str_replace(array(
+					'{{data_pajak}}',
+					'{{tgl_bayar}}'
+				), array(
+					implode(PHP_EOL, $data_bayar).
+					PHP_EOL.
+					PHP_EOL.
+					'Status pembayaran: *'.$status_bayar_wp.'*'.
+					PHP_EOL.
+					'Total *Rp '.number_format($nilai_total,0,",",".").'*',
+					$tgl_bayar
+				), $pesan);
+
 				$no_bendahara = get_option('_crb_pbb_wa_bendahara');
-				if(!empty($no_bendahara)){
-					$pesan = get_option('_crb_pbb_template_notifikasi_wa_bendahara');
-					$pesan = str_replace(array(
-						'{{data_pajak}}',
-						'{{tgl_bayar}}'
-					), array(
-						implode(PHP_EOL, $data_bayar).
-						PHP_EOL.
-						PHP_EOL.
-						'Status pembayaran: *'.$status_bayar_wp.'*'.
-						PHP_EOL.
-						'Total *Rp '.number_format($nilai_total,0,",",".").'*',
-						$tgl_bayar
-					), $pesan);
-					$this->send_notif_wa(array(
-						'number' => $no_bendahara,
-						'message' => $pesan
-					));
+				foreach ($petugas_pajak_all as $petugas => $data_bayar_petugas) {
+					if(!empty($petugas)){
+						$no_wa_petugas = get_user_meta( $petugas, 'whatsapp', true );
+						if(!empty($no_wa_petugas)){
+							$ket_wp = array();
+							$nilai_total_petugas = 0;
+							foreach ($data_bayar_petugas as $ket) {
+								$ket_wp[] = $ket['keterangan'];
+								$nilai_total_petugas += $ket['nilai'];
+							}
+							$pesan_petugas = get_option('_crb_pbb_template_notifikasi_wa_bendahara');
+							$pesan_petugas = str_replace(array(
+								'{{data_pajak}}',
+								'{{tgl_bayar}}'
+							), array(
+								implode(PHP_EOL, $ket_wp).
+								PHP_EOL.
+								PHP_EOL.
+								'Status pembayaran: *'.$status_bayar_wp.'*'.
+								PHP_EOL.
+								'Total *Rp '.number_format($nilai_total_petugas,0,",",".").'*',
+								$tgl_bayar
+							), $pesan_petugas);
+							$this->send_notif_wa(array(
+								'number' => $no_wa_petugas,
+								'message' => $pesan_petugas
+							));
+						}
+					}else{
+						if(!empty($no_bendahara)){
+							$this->send_notif_wa(array(
+								'number' => $no_bendahara,
+								'message' => $pesan.PHP_EOL.PHP_EOL.'*Petugas Pajak belum disetting untuk NOP ini!*'
+							));
+						}
+					}
+				}
+
+				// jika status bayar lebih sudah diterima bendahara dst, maka bendahara mendapat notifikasi
+				if($_POST['status'] >= 2){
+					if(!empty($no_bendahara)){
+						$this->send_notif_wa(array(
+							'number' => $no_bendahara,
+							'message' => $pesan
+						));
+					}
 				}
 			}
 		} else {
