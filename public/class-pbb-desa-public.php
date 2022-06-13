@@ -121,4 +121,100 @@ class Pbb_Desa_Public {
 		require_once plugin_dir_path(dirname(__FILE__)) . 'public/partials/pbb-desa-monev-all.php';
 	}
 
+	public function manajemen_pbb($atts)
+	{
+		// untuk disable render shortcode di halaman edit page/post
+		if(!empty($_GET) && !empty($_GET['post'])){
+			return '';
+		}
+		require_once plugin_dir_path(dirname(__FILE__)) . 'public/partials/pbb-desa-manajemen.php';
+	}
+
+	public function menu_manajemen_pbb($atts)
+	{
+		$nama_page = 'Manajemen Pajak Desa';
+		$url_page = $this->generatePage($nama_page, '[manajemen_pbb]');
+		echo '
+			<ul>
+				<li><a href="'.$url_page.'" target="_blank" class="btn btn-info">'.$nama_page.'</a></li>
+			</ul>';
+	}
+
+	public function get_link_post($custom_post){
+		$link = get_permalink($custom_post);
+		$options = array();
+		if(!empty($custom_post->custom_url)){
+			$options['custom_url'] = $custom_post->custom_url;
+		}
+		if(strpos($link, '?') === false){
+			$link .= '?key=' . $this->gen_key(false, $options);
+		}else{
+			$link .= '&key=' . $this->gen_key(false, $options);
+		}
+		return $link;
+	}
+
+	public function decode_key($value){
+		$key = base64_decode($value);
+		$key_db = md5(get_option( '_crb_pbb_api_key' ));
+		$key = explode($key_db, $key);
+		$get = array();
+		if(!empty($key[2])){
+			$all_get = explode('&', $key[2]);
+			foreach ($all_get as $k => $v) {
+				$current_get = explode('=', $v);
+				$get[$current_get[0]] = $current_get[1];
+			}
+		}
+		return $get;
+	}
+
+	function gen_key($key_db = false, $options = array()){
+		$now = time()*1000;
+		if(empty($key_db)){
+			$key_db = md5(get_option( '_crb_pbb_api_key' ));
+		}
+		$tambahan_url = '';
+		if(!empty($options['custom_url'])){
+			$custom_url = array();
+			foreach ($options['custom_url'] as $k => $v) {
+				$custom_url[] = $v['key'].'='.$v['value'];
+			}
+			$tambahan_url = $key_db.implode('&', $custom_url);
+		}
+		$key = base64_encode($now.$key_db.$now.$tambahan_url);
+		return $key;
+	}
+
+	public function generatePage($nama_page, $content = false, $update = false){
+		$custom_post = get_page_by_title($nama_page, OBJECT, 'page');
+
+		$_post = array(
+			'post_title'	=> $nama_page,
+			'post_content'	=> $content,
+			'post_type'		=> 'page',
+			'post_status'	=> 'private',
+			'comment_status'	=> 'closed'
+		);
+		if (empty($custom_post) || empty($custom_post->ID)) {
+			$id = wp_insert_post($_post);
+			$_post['insert'] = 1;
+			$_post['ID'] = $id;
+			$custom_post = get_page_by_title($nama_page, OBJECT, 'page');
+			update_post_meta($custom_post->ID, 'ast-breadcrumbs-content', 'disabled');
+			update_post_meta($custom_post->ID, 'ast-featured-img', 'disabled');
+			update_post_meta($custom_post->ID, 'ast-main-header-display', 'disabled');
+			update_post_meta($custom_post->ID, 'footer-sml-layout', 'disabled');
+			update_post_meta($custom_post->ID, 'site-content-layout', 'page-builder');
+			update_post_meta($custom_post->ID, 'site-post-title', 'disabled');
+			update_post_meta($custom_post->ID, 'site-sidebar-layout', 'no-sidebar');
+			update_post_meta($custom_post->ID, 'theme-transparent-header-meta', 'disabled');
+		}else if($update){
+			$_post['ID'] = $custom_post->ID;
+			wp_update_post( $_post );
+			$_post['update'] = 1;
+		}
+		return $this->get_link_post($custom_post);
+	}
+
 }

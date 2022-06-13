@@ -186,6 +186,8 @@ class Pbb_Desa {
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 		add_shortcode('tampilpbb', array($plugin_public, 'tampilpbb'));
 		add_shortcode('monitor_all_pajak', array($plugin_public, 'monitor_all_pajak'));
+		add_shortcode('manajemen_pbb', array($plugin_public, 'manajemen_pbb'));
+		add_shortcode('menu_manajemen_pbb', array($plugin_public, 'menu_manajemen_pbb'));
 
 	}
 
