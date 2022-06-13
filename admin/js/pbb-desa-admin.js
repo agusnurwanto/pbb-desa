@@ -286,6 +286,7 @@ function get_wajib_pajak(){
                     +'<td colspan="9" style="text-align: center;">Data Kosong!</td>'
                 +'</tr>';
             if(res.status == 'success'){
+                var total = 0;
                 res.data.map(function(b, i){
                     status = pbb.status_bayar[b.crb_pbb_status_bayar];
                     var checked = '';
@@ -296,6 +297,8 @@ function get_wajib_pajak(){
                             }
                         });
                     }
+                    var nilai = +(b.crb_pbb_ketetapan_pbb.replace('Rp ','').replace(/\./g,''));
+                    total += nilai;
                     data_wp += ''
                         +'<tr>'
                             +'<td class="text_tengah"><input type="checkbox" data-post-id="'+b.post_id+'" '+checked+'></td>'
@@ -311,6 +314,13 @@ function get_wajib_pajak(){
                 });
                 if(data_wp == ''){
                     data_wp += data_wp_kosong;
+                }else{
+                    total = 'Rp '+formatMoney(total, 0, ",", ".");
+                    data_wp += ''
+                        +'<tr>'
+                            +'<td colspan="6">Total</td>'
+                            +'<td colspan="3">'+total+'</td>'
+                        +'</tr>';
                 }
             }else{
                 data_wp += data_wp_kosong;
@@ -321,6 +331,22 @@ function get_wajib_pajak(){
         }
     });
 }
+
+function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
+    try {
+        decimalCount = Math.abs(decimalCount);
+        decimalCount = isNaN(decimalCount) ? 2 : decimalCount;
+
+        const negativeSign = amount < 0 ? "-" : "";
+
+        let i = parseInt(amount = Math.abs(Number(amount) || 0).toFixed(decimalCount)).toString();
+        let j = (i.length > 3) ? i.length % 3 : 0;
+
+        return negativeSign + (j ? i.substr(0, j) + thousands : '') + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thousands) + (decimalCount ? decimal + Math.abs(amount - i).toFixed(decimalCount).slice(2) : "");
+    } catch (e) {
+        console.log(e)
+    }
+};
 
 function cek_null(number, length){
     number = ''+number;
