@@ -38,7 +38,7 @@ foreach ( $posts as $post ) {
     $nama_petugas = $user_info->display_name;
     $body_table .= '
     <tr>
-        <td style="text-align: center;" data-post-id="'.$post->ID.'"></td>
+        <td style="text-align: center;" data-post-id="'.$post->ID.'" class="table-pbb-desa"></td>
         <td style="text-align: center;">'.$i.'</td>
         <td style="text-align: center;">'.$nop.'</td>
         <td style="text-align: center;">'.$nama_wp.'</td>

@@ -159,7 +159,6 @@ function bayar_pajak(){
         alert('Pilih status pembayaran dulu!');
     }else{
         jQuery('#wrap-loading').show();
-        console.log(data_id_post);
         jQuery.ajax({
             url: ajaxurl,
             type: 'post',
@@ -180,12 +179,12 @@ function bayar_pajak(){
 
 function get_data_list(){
     window.data_id_post = [];
-    jQuery('#user-table-pembayaran-pbb').map(function(i, b){
-        var tr = jQuery(b);
-        var checkbox = tr.find('td input[type="checkbox"]');
+
+    jQuery('.table-pbb-desa').map(function(i, b){
+        var checkbox = jQuery(b).find('input[type="checkbox"]');
         var cek = checkbox.is(':checked');
         if(cek){
-            var id = checkbox.attr('data-post-id');
+            var id = jQuery(b).attr('data-post-id');
             data_id_post.push(id);
         }
     });
