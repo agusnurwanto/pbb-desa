@@ -147,6 +147,7 @@ function bayar_pajak(){
         alert('Pilih status pembayaran dulu!');
     }else{
         jQuery('#wrap-loading').show();
+        console.log(data_id_post);
         jQuery.ajax({
             url: ajaxurl,
             type: 'post',

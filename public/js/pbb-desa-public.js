@@ -122,3 +122,72 @@ function tableHtmlToExcel(tableID, filename = ''){
         downloadLink.click();
     }
 }
+
+jQuery(document).ready(function() {
+    var loading = ''
+        +'<div id="wrap-loading">'
+            +'<div class="lds-hourglass"></div>'
+            +'<div id="persen-loading"></div>'
+        +'</div>';
+    if(jQuery('#wrap-loading').length == 0){
+        jQuery('body').prepend(loading);
+    }
+
+    var table = jQuery('#user-table-pembayaran-pbb').DataTable({     
+       'columnDefs': [
+            {
+                'targets': 0,
+                'checkboxes': {
+                    'selectRow': true
+                }
+            }
+       ],
+       'select': {
+          'style': 'multi'
+       },
+       'order': [[1, 'asc']]
+    });
+      
+});
+
+function bayar_pajak(){
+    var status = jQuery('#status_bayar').val();
+    get_data_list();
+    if(data_id_post.length == 0){
+        alert('Pilih wajib pajak dulu!');
+    }else if(status == ''){
+        alert('Pilih status pembayaran dulu!');
+    }else{
+        jQuery('#wrap-loading').show();
+        console.log(data_id_post);
+        jQuery.ajax({
+            url: ajaxurl,
+            type: 'post',
+            data: {
+                action: 'ubah_status_pajak',
+                data: data_id_post,
+                status: status
+            },
+            success: function(res){
+                jQuery('#wrap-loading').hide();
+                res = JSON.parse(res);
+                alert(res.message);
+                location.reload();
+            }
+        });
+    }
+}
+
+function get_data_list(){
+    window.data_id_post = [];
+    jQuery('#user-table-pembayaran-pbb').map(function(i, b){
+        var tr = jQuery(b);
+        var checkbox = tr.find('td input[type="checkbox"]');
+        var cek = checkbox.is(':checked');
+        if(cek){
+            var id = checkbox.attr('data-post-id');
+            data_id_post.push(id);
+        }
+    });
+}
+

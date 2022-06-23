@@ -76,8 +76,9 @@ class Pbb_Desa_Public {
 		 * class.
 		 */
 
+		wp_enqueue_style($this->plugin_name . 'bootstrap', plugin_dir_url(__FILE__) . 'css/bootstrap.min.css', array(), $this->version, 'all');
+		wp_enqueue_style($this->plugin_name . 'datatables', plugin_dir_url(__FILE__) . 'css/jquery.dataTables.min.css', array(), $this->version, 'all');
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/pbb-desa-public.css', array(), $this->version, 'all' );
-
 	}
 
 	/**
@@ -98,8 +99,12 @@ class Pbb_Desa_Public {
 		 * between the defined hooks and the functions defined in this
 		 * class.
 		 */
-
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/pbb-desa-public.js', array( 'jquery' ), $this->version, false );
+		wp_enqueue_script($this->plugin_name . 'bootstrap', plugin_dir_url(__FILE__) . 'js/bootstrap.bundle.min.js', array('jquery'), $this->version, false);
+		wp_enqueue_script($this->plugin_name . 'datatables', plugin_dir_url(__FILE__) . 'js/jquery.dataTables.min.js', array('jquery'), $this->version, false);
+		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/pbb-desa-public.js', array( 'jquery' ), $this->version.'.'.time(), false );
+		wp_localize_script( $this->plugin_name, 'pbb', array(
+		    'status_bayar' => $this->data_status_bayar(array('type' => 'html_color'))
+		));
 
 	}
 
@@ -137,7 +142,11 @@ class Pbb_Desa_Public {
 		echo '
 			<ul>
 				<li><a href="'.$url_page.'" target="_blank" class="btn btn-info">'.$nama_page.'</a></li>
-			</ul>';
+			</ul>
+			
+			';
+
+		
 	}
 
 	public function get_link_post($custom_post){
@@ -153,6 +162,45 @@ class Pbb_Desa_Public {
 		}
 		return $link;
 	}
+
+	public function data_status_bayar($option = array('type' => false)){
+		$data = array(
+    		'' => 'Pilih Status Pembayaran',
+    		'0' => 'Belum Bayar',
+    		'1' => 'Diterima Petugas Pajak',
+    		'2' => 'Diterima Bendahara Desa',
+    		'3' => 'Diterima Kecamatan',
+    		'4' => 'Lunas'
+    	);
+		if($option['type'] == 'html'){
+			$html = '';
+			foreach ($data as $k => $v) {
+				$html .= '<option value="'.$k.'">'.$v.'</option>';
+			}
+			return $html;
+		}else if($option['type'] == 'html_color'){
+			$new_data = array();
+			foreach ($data as $k => $v) {
+				if($k >= 1 && $k <=3){
+					$new_data[$k] = '<span style="color: orange; font-weight: bold;">'.$v.'</span>';
+				}else if($k == 4){
+					$new_data[$k] = '<span style="color: green; font-weight: bold;">'.$v.'</span>';
+				}else{
+					$new_data[$k] = '<span style="color: red; font-weight: bold;">'.$v.'</span>';
+				}
+			}
+			return $new_data;
+		}else{
+			return $data;
+		}
+	}
+
+	function myplugin_ajaxurl() {
+
+		echo '<script type="text/javascript">
+				var ajaxurl = "' . admin_url('admin-ajax.php') . '";
+			  </script>';
+	 }
 
 	public function decode_key($value){
 		$key = base64_decode($value);

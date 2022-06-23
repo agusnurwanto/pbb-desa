@@ -184,6 +184,8 @@ class Pbb_Desa {
 
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
+		$this->loader->add_action('wp_ajax_ubah_status_pajak',  $plugin_admin, 'ubah_status_pajak');
+		$this->loader->add_action('wp_head',  $plugin_public, 'myplugin_ajaxurl');
 		add_shortcode('tampilpbb', array($plugin_public, 'tampilpbb'));
 		add_shortcode('monitor_all_pajak', array($plugin_public, 'monitor_all_pajak'));
 		add_shortcode('manajemen_pbb', array($plugin_public, 'manajemen_pbb'));
