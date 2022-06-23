@@ -542,7 +542,6 @@ class Pbb_Desa_Admin {
 
 	function ubah_status_pajak(){
 		global $wpdb;
-		echo json_encode($_POST);
 		$ret = array(
 			'status'	=> 'success',
 			'message'	=> 'Berhasil ubah status wajib pajak!'
