@@ -1,6 +1,12 @@
 <?php
 
 $user_id = get_current_user_id();
+$user_meta = get_userdata($user_id);
+$user_role = $user_meta->roles;
+$user_name = $user_meta->display_name;
+
+print_r($data);
+
 $filter_query[] = array(
     'key'   => '_crb_pbb_petugas_pajak',
     'value' => $user_id,
@@ -51,6 +57,8 @@ foreach ( $posts as $post ) {
 }
 
 ?>
+
+
 <link type="text/css" href="//gyrocode.github.io/jquery-datatables-checkboxes/1.2.12/css/dataTables.checkboxes.css" rel="stylesheet" />
 <script type="text/javascript" src="//gyrocode.github.io/jquery-datatables-checkboxes/1.2.12/js/dataTables.checkboxes.min.js"></script>
 <style>
@@ -64,10 +72,13 @@ foreach ( $posts as $post ) {
     top: 0;
 }
 </style>
-<div style="padding: 10px;">
+<div>
+    <h3 class="text-center">Dashboard Manajemen Pajak <br>Desa <?php echo get_option('_crb_pbb_desa') ?> Petugas <?php echo $user_name ?></h3>
+</div>
+<div style="padding: 10px; padding-top: 5%;">
     <span>Ubah status bayar : </span>
     <select id="status_bayar" style="min-width: 250px; margin-right: 20px;">
-        <?php echo $this->data_status_bayar(array('type' => 'html')) ?>
+        <?php echo $this->data_status_bayar(array('type' => 'html'), $user_role[0]); ?>
     </select>
     <a onclick="bayar_pajak(); return false" href="javascript:void(0);" class="button button-primary">Simpan Status Pajak</a>
     <table id="user-table-pembayaran-pbb" class="table table-bordered" cellspacing="0" width="100%">

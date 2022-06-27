@@ -163,15 +163,31 @@ class Pbb_Desa_Public {
 		return $link;
 	}
 
-	public function data_status_bayar($option = array('type' => false)){
+	public function data_status_bayar($option = array('type' => false), $role=''){
 		$data = array(
-    		'' => 'Pilih Status Pembayaran',
-    		'0' => 'Belum Bayar',
-    		'1' => 'Diterima Petugas Pajak',
-    		'2' => 'Diterima Bendahara Desa',
-    		'3' => 'Diterima Kecamatan',
-    		'4' => 'Lunas'
-    	);
+			'' => 'Pilih Status Pembayaran',
+			'0' => 'Belum Bayar',
+			'1' => 'Diterima Petugas Pajak',
+			'2' => 'Diterima Bendahara Desa',
+			'3' => 'Diterima Kecamatan',
+			'4' => 'Lunas'
+		);
+
+		// key array disesuaikan dengan array di atas
+		if ($role == 'petugas_pajak') {
+			$data = array(
+				'' => 'Pilih Status Pembayaran',
+				'1' => 'Diterima Petugas Pajak',
+			);
+		}else if ($role == 'pengawas') {
+			$data = array(
+				'' => 'Pilih Status Pembayaran',
+				'0' => 'Belum Bayar',
+				'4' => 'Lunas'
+			);
+		}
+
+
 		if($option['type'] == 'html'){
 			$html = '';
 			foreach ($data as $k => $v) {
@@ -196,7 +212,6 @@ class Pbb_Desa_Public {
 	}
 
 	function myplugin_ajaxurl() {
-
 		echo '<script type="text/javascript">
 				var ajaxurl = "' . admin_url('admin-ajax.php') . '";
 			  </script>';
