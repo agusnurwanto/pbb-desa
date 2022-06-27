@@ -124,6 +124,13 @@ class Pbb_Desa {
 
 		$this->loader = new Pbb_Desa_Loader();
 
+		// Functions tambahan
+		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-pbb-desa-functions.php';
+
+		$this->functions = new Pbb_Desa_Functions( $this->plugin_name, $this->version );
+
+		$this->loader->add_action('template_redirect', $this->functions, 'allow_access_private_post', 0);
+
 	}
 
 	/**
@@ -152,12 +159,11 @@ class Pbb_Desa {
 	 */
 	private function define_admin_hooks() {
 
-		$plugin_admin = new Pbb_Desa_Admin( $this->get_plugin_name(), $this->get_version() );
+		$plugin_admin = new Pbb_Desa_Admin( $this->get_plugin_name(), $this->get_version(), $this->functions );
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 		
-		$this->loader->add_action('template_redirect', $plugin_admin, 'allow_access_private_post', 0);
 		$this->loader->add_action('carbon_fields_register_fields', $plugin_admin, 'crb_attach_pbb_options');
 		$this->loader->add_filter('carbon_fields_should_save_field_value', $plugin_admin, 'crb_edit_save', 10, 3);
 		$this->loader->add_action('init', $plugin_admin, 'create_posttype_pbb');
@@ -179,12 +185,10 @@ class Pbb_Desa {
 	 * @access   private
 	 */
 	private function define_public_hooks() {
-		$plugin_admin = new Pbb_Desa_Admin( $this->get_plugin_name(), $this->get_version() );
-		$plugin_public = new Pbb_Desa_Public( $this->get_plugin_name(), $this->get_version(), $plugin_admin );
+		$plugin_public = new Pbb_Desa_Public( $this->get_plugin_name(), $this->get_version(), $this->functions );
 
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
-		$this->loader->add_action('wp_ajax_ubah_status_pajak',  $plugin_admin, 'ubah_status_pajak');
 		$this->loader->add_action('wp_head',  $plugin_public, 'myplugin_ajaxurl');
 		add_shortcode('tampilpbb', array($plugin_public, 'tampilpbb'));
 		add_shortcode('monitor_all_pajak', array($plugin_public, 'monitor_all_pajak'));

@@ -5,8 +5,6 @@ $user_meta = get_userdata($user_id);
 $user_role = $user_meta->roles;
 $user_name = $user_meta->display_name;
 
-print_r($data);
-
 $filter_query[] = array(
     'key'   => '_crb_pbb_petugas_pajak',
     'value' => $user_id,
@@ -47,10 +45,10 @@ foreach ( $posts as $post ) {
         <td style="text-align: center;" data-post-id="'.$post->ID.'" class="table-pbb-desa"></td>
         <td style="text-align: center;">'.$i.'</td>
         <td style="text-align: center;">'.$nop.'</td>
-        <td style="text-align: center;">'.$nama_wp.'</td>
-        <td style="text-align: center;">'.get_post_meta( $post->ID, '_crb_pbb_alamat_op', true ).'</td>
+        <td>'.$nama_wp.'</td>
+        <td>'.get_post_meta( $post->ID, '_crb_pbb_alamat_op', true ).'</td>
         <td style="text-align: center;">'.$status_bayar_wp.'</td>
-        <td style="text-align: center;">'.'Rp '.number_format($nilai,0,",",".").'</td>
+        <td class="text_kanan">'.number_format($nilai,0,",",".").'</td>
         <td style="text-align: center;">'.get_post_meta( $post->ID, '_crb_pbb_tgl_bayar', true ).'</td>
         <td style="text-align: center;">'.$nama_petugas.'</td>
     </tr>';
@@ -73,14 +71,16 @@ foreach ( $posts as $post ) {
 }
 </style>
 <div>
-    <h3 class="text-center">Dashboard Manajemen Pajak <br>Desa <?php echo get_option('_crb_pbb_desa') ?> Petugas <?php echo $user_name ?></h3>
+    <h3 class="text-center">Dashboard Manajemen Pajak <br>Desa: <?php echo get_option('_crb_pbb_desa') ?><br>Nama Petugas: <?php echo $user_name ?></h3>
 </div>
-<div style="padding: 10px; padding-top: 5%;">
-    <span>Ubah status bayar : </span>
-    <select id="status_bayar" style="min-width: 250px; margin-right: 20px;">
-        <?php echo $this->data_status_bayar(array('type' => 'html'), $user_role[0]); ?>
-    </select>
-    <a onclick="bayar_pajak(); return false" href="javascript:void(0);" class="button button-primary">Simpan Status Pajak</a>
+<div style="padding: 10px;">
+    <div style="margin-bottom: 20px;">
+        <span>Ubah status bayar : </span>
+        <select id="status_bayar" style="min-width: 250px; margin-right: 20px;">
+            <?php echo $this->data_status_bayar(array('type' => 'html'), $user_role[0]); ?>
+        </select>
+        <a onclick="bayar_pajak(); return false" href="javascript:void(0);" class="button button-primary">Simpan Status Pajak</a>
+    </div>
     <table id="user-table-pembayaran-pbb" class="table table-bordered" cellspacing="0" width="100%">
         <thead>
             <tr>
@@ -90,7 +90,7 @@ foreach ( $posts as $post ) {
                 <th style="width: 170px;">Nama Wajib Pajak</th>
                 <th>Alamat</th>
                 <th style="width: 170px;">Status Pembayaran</th>
-                <th style="width: 100px;">Nilai Pajak</th>
+                <th style="width: 100px;">Nilai Pajak (Rp)</th>
                 <th style="width: 125px;">Tgl. Transaksi</th>
                 <th style="width: 125px;">Nama Petugas</th>
             </tr>
@@ -98,5 +98,10 @@ foreach ( $posts as $post ) {
         <tbody>
             <?php echo $body_table ?>
         </tbody>
+        <tfoot>
+            <th colspan="6">Total</th>
+            <th id="total_all" class="text_kanan"></th>
+            <th colspan="2"></th>
+        </tfoot>
     </table>
 </div>

@@ -43,17 +43,20 @@ class Pbb_Desa_Admin {
 	 */
 	private $version;
 
+	private $functions;
+
 	/**
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of this plugin.
+	 * @param      string    $plugin_name       The name of the plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
+	public function __construct( $plugin_name, $version, $functions ) {
 
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
+		$this->functions = $functions;
 
 	}
 
@@ -547,6 +550,15 @@ class Pbb_Desa_Admin {
 			'message'	=> 'Berhasil ubah status wajib pajak!'
 		);
 		if (!empty($_POST)) {
+			$user_id = get_current_user_id();
+		    if(
+		    	!$this->functions->user_has_role($user_id, 'administrator')
+		    	&& $_POST['status'] > 1
+		    ){
+		    	$ret['status'] = 'error';
+		    	$ret['message'] = 'Anda tidak dapat akses untuk melakukan ini!';
+		    	die(json_encode($ret));
+			}
 			$status_notif_wa = get_option('_crb_status_notif_wa');
 			$tgl_bayar = date('Y-m-d H:i:s');
 			$data_bayar = array();
@@ -596,7 +608,7 @@ class Pbb_Desa_Admin {
 							$nop,
 							$status_bayar_wp,
 							$tgl_bayar,
-							$this->get_link_post($post_id, true)
+							$this->function->get_link_post($post_id, true)
 						), $pesan);
 						$this->send_notif_wa(array(
 							'number' => $no_wp,
@@ -736,81 +748,6 @@ class Pbb_Desa_Admin {
 		require_once plugin_dir_path(dirname(__FILE__)) . 'admin/partials/pbb-desa-admin-display.php';
 	}
 
-	function gen_key($key_db = false, $lifetime = false){
-		$now = time()*1000;
-		if(empty($key_db)){
-			$key_db = get_option( '_crb_pbb_api_key' );
-		}
-		$key_db = md5($key_db);
-		if($lifetime){
-			$key = base64_encode($now.$key_db.$now.$key_db.'ok');
-		}else{
-			$key = base64_encode($now.$key_db.$now);
-		}
-		return $key;
-	}
-
-    function allow_access_private_post(){
-    	if(
-    		!empty($_GET) 
-    		&& !empty($_GET['key'])
-    	){
-    		$key = base64_decode($_GET['key']);
-    		$key_db = get_option( '_crb_pbb_api_key' );
-    		$key = explode(md5($key_db), $key);
-    		$valid = 0;
-    		if(!empty($key[2]) && $key[2]=='ok'){
-    			$valid = 1;
-    		}else if(
-    			!empty($key[1]) 
-    			&& $key[0] == $key[1]
-    			&& is_numeric($key[1])
-    		){
-    			$tgl1 = new DateTime();
-    			$date = substr($key[1], 0, strlen($key[1])-3);
-    			$tgl2 = new DateTime(date('Y-m-d', $date));
-    			$valid = $tgl2->diff($tgl1)->days+1;
-    		}
-    		if($valid == 1){
-	    		global $wp_query;
-		        // print_r($wp_query);
-		        // print_r($wp_query->queried_object); die('tes');
-		        if(!empty($wp_query->queried_object)){
-		    		if($wp_query->queried_object->post_status == 'private'){
-						wp_update_post(array(
-					        'ID'    =>  $wp_query->queried_object->ID,
-					        'post_status'   =>  'publish'
-				        ));
-				        die('<script>window.location =  window.location.href;</script>');
-					}else{
-						wp_update_post(array(
-					        'ID'    =>  $wp_query->queried_object->ID,
-					        'post_status'   =>  'private'
-				        ));
-					}
-				}else if($wp_query->found_posts >= 1){
-					global $wpdb;
-					$sql = $wp_query->request;
-					$post = $wpdb->get_results($sql, ARRAY_A);
-					if(!empty($post)){
-						if($post[0]['post_status'] == 'private'){
-							wp_update_post(array(
-						        'ID'    =>  $post[0]['ID'],
-						        'post_status'   =>  'publish'
-					        ));
-					        die('<script>window.location =  window.location.href;</script>');
-						}else{
-							wp_update_post(array(
-						        'ID'    =>  $post[0]['ID'],
-						        'post_status'   =>  'private'
-					        ));
-						}
-					}
-				}
-			}
-    	}
-    }
-
     function listen_wa(){
     	$json = file_get_contents('php://input');
 		$data = json_decode($json);
@@ -889,7 +826,7 @@ class Pbb_Desa_Admin {
 							'Lunas: *Rp '.number_format($total_lunas,0,",",".").'*'.
 							PHP_EOL.
 							PHP_EOL.
-							'Informasi lebih detail bisa dilihat di *'.$this->get_link_post($custom_post, true).'*';
+							'Informasi lebih detail bisa dilihat di *'.$this->function->get_link_post($custom_post, true).'*';
 
 						$this->send_notif_wa(array(
 							'number' => $pengirim,
@@ -902,16 +839,6 @@ class Pbb_Desa_Admin {
 		}
 		die($file);
     }
-
-    public function get_link_post($custom_post, $forever = false){
-		$link = get_permalink($custom_post);
-		if(strpos($link, '?') === false){
-			$link .= '?key=' . $this->gen_key(false, $forever);
-		}else{
-			$link .= '&key=' . $this->gen_key(false, $forever);
-		}
-		return $link;
-	}
 
 	public function crb_edit_save($save, $value, $field){
 		if($field->get_name() == '_crb_pbb_tahun_anggaran'){
