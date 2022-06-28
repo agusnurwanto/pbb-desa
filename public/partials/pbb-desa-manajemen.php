@@ -100,7 +100,7 @@ foreach ( $posts as $post ) {
 }
 </style>
 <div>
-    <h3 class="text-center">Dashboard Manajemen Pajak <br>Desa <?php echo get_option('_crb_pbb_desa') ?> Petugas <?php echo $user_name ?></h3>
+    <h3 class="text-center">Dashboard Manajemen Pajak <br> <?php echo get_option('_crb_pbb_desa') ?> <br>Petugas <?php echo $user_name ?></h3>
 </div>
 <div style="padding: 10px; padding-top: 5%;">
     <div class="form-group row" style="padding: 10px; padding-left: 10px;">
