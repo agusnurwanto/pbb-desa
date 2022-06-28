@@ -60,6 +60,16 @@ class Pbb_Desa_Activator {
 				)
 			);
 		}
+		$role = get_role('pengawas_pajak');
+		if ( empty($role) ) {
+		    $result = add_role( 
+				'pengawas_pajak', 
+				__('Pengawas Pajak' ),
+				array(
+					'read' => true, // true allows this capability
+				)
+			);
+		}
 	}
 
 }

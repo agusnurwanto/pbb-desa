@@ -147,6 +147,10 @@ jQuery(document).ready(function() {
        },
        'order': [[1, 'asc']]
     });
+
+    jQuery('#petugas_pajak').on('change', function(){
+        get_wajib_pajak();
+    });
       
 });
 
@@ -190,3 +194,85 @@ function get_data_list(){
     });
 }
 
+function get_wajib_pajak(){
+    jQuery('#wrap-loading').show();
+    get_data_list();
+    var tahun_anggaran = jQuery('#tahun_anggaran').val();
+    var petugas_pajak = jQuery('#petugas_pajak').val();
+    jQuery.ajax({
+        url: ajaxurl,
+        type: 'post',
+        data: {
+            action: 'get_wajib_pajak',
+            tahun_anggaran: tahun_anggaran,
+            petugas_pajak: petugas_pajak
+        },
+        success: function(res){
+            res = JSON.parse(res);
+            var data_wp = '';
+            var data_wp_kosong = ''
+                +'<tr>'
+                    +'<td colspan="9" style="text-align: center;">Data Kosong!</td>'
+                +'</tr>';
+            if(res.status == 'success'){
+                var total = 0;
+                res.data.map(function(b, i){
+                    status = pbb.status_bayar[b.crb_pbb_status_bayar];
+                    var checked = '';
+                    if(typeof data_id_post != 'undefined'){
+                        data_id_post.map(function(m, n){
+                            if(m == b.post_id){
+                                checked = 'checked';
+                            }
+                        });
+                    }
+                    var nilai = +(b.crb_pbb_ketetapan_pbb.replace('Rp ','').replace(/\./g,''));
+                    total += nilai;
+                    data_wp += ''
+                        +'<tr>'
+                            +'<td class="text_tengah"><input type="checkbox" data-post-id="'+b.post_id+'" '+checked+'></td>'
+                            +'<td class="text_tengah" style="text-align: right;">'+(i+1)+'</td>'
+                            +'<td class="text_tengah"><a href="'+b.crb_pbb_url+'" target="blank">'+b.crb_pbb_nop+'</a></td>'
+                            +'<td>'+b.crb_pbb_nama_wp+'</td>'
+                            +'<td>'+b.crb_pbb_alamat_op+'</td>'
+                            +'<td style="width: 100px;">'+status+'</td>'
+                            +'<td>'+b.crb_pbb_ketetapan_pbb+'</td>'
+                            +'<td class="text_tengah tgl_transaksi">'+b.crb_pbb_tgl+'</td>'
+                            +'<td class="text_tengah">'+b.crb_display_name+'</td>'
+                        +'</tr>';
+                });
+                if(data_wp == ''){
+                    data_wp += data_wp_kosong;
+                }else{
+                    total = 'Rp '+formatMoney(total, 0, ",", ".");
+                    data_wp += ''
+                        +'<tr>'
+                            +'<td colspan="6">Total</td>'
+                            +'<td colspan="3">'+total+'</td>'
+                        +'</tr>';
+                }
+            }else{
+                data_wp += data_wp_kosong;
+                alert(res.message);
+            }
+            jQuery('#user-table-pembayaran-pbb tbody').html(data_wp);
+            jQuery('#wrap-loading').hide();
+        }
+    });
+}
+
+function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
+    try {
+        decimalCount = Math.abs(decimalCount);
+        decimalCount = isNaN(decimalCount) ? 2 : decimalCount;
+
+        const negativeSign = amount < 0 ? "-" : "";
+
+        let i = parseInt(amount = Math.abs(Number(amount) || 0).toFixed(decimalCount)).toString();
+        let j = (i.length > 3) ? i.length % 3 : 0;
+
+        return negativeSign + (j ? i.substr(0, j) + thousands : '') + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thousands) + (decimalCount ? decimal + Math.abs(amount - i).toFixed(decimalCount).slice(2) : "");
+    } catch (e) {
+        console.log(e)
+    }
+};

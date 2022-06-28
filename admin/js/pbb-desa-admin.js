@@ -347,7 +347,7 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
     } catch (e) {
         console.log(e)
     }
-};
+}
 
 function cek_null(number, length){
     number = ''+number;
