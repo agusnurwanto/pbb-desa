@@ -39,8 +39,8 @@ class Pbb_Desa_Public {
 	 * @var      string    $version    The current version of this plugin.
 	 */
 	private $version;
-	
-	private $class_admin;
+
+	private $functions;
 
 	/**
 	 * Initialize the class and set its properties.
@@ -49,11 +49,11 @@ class Pbb_Desa_Public {
 	 * @param      string    $plugin_name       The name of the plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version, $class_admin ) {
+	public function __construct( $plugin_name, $version, $functions ) {
 
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
-		$this->class_admin = $class_admin;
+		$this->functions = $functions;
 
 	}
 
@@ -140,13 +140,19 @@ class Pbb_Desa_Public {
 		$nama_page = 'Manajemen Pajak Desa';
 		$url_page = $this->generatePage($nama_page, '[manajemen_pbb]');
 		echo '
-			<ul>
+			<ul class="pbb-desa-manajemen">
 				<li><a href="'.$url_page.'" target="_blank" class="btn btn-info">'.$nama_page.'</a></li>
 			</ul>
-			
-			';
-
-		
+			<style>
+				.pbb-desa-manajemen{
+					margin: 0;
+				}
+				.pbb-desa-manajemen li {
+					list-style: none;
+					text-align: center;
+				}
+			</style>
+		';
 	}
 
 	public function get_link_post($custom_post){
