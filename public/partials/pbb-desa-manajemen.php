@@ -38,18 +38,18 @@ foreach ( $users as $user ) {
     $list[$user->ID] = esc_html( $user->display_name ) . ' (' . esc_html( $user->user_email ) . ')';
     $list_html .= '<option value="'.$user->ID.'">'.$list[$user->ID].'</option>';
 }
+$list_petugas = ' <input type="hidden" id="petugas_pajak" name="petugas_pajak" value="'.$user_id.'">';
 
-$list_petugas = '';
 
 if ($user_role == 'pengawas') {
     $list_petugas = '
         <div>
             <label>Pilih Petugas Pajak : </label>
-            <select id="petugas_pajak" style="min-width: 250px;">'.$list_html.'</select>
+            <select id="petugas_pajak" style="min-width: 250">'.$list_html.'</select>
         </div>
         ';
 }
-
+$datasets = array();
 
 foreach ( $posts as $post ) {
     $i++;
@@ -66,6 +66,22 @@ foreach ( $posts as $post ) {
     $status_bayar_wp = $status_bayar[$status];
     $nop = get_post_meta( $post->ID, '_crb_pbb_nop', true );
     $nama_wp = get_post_meta( $post->ID, '_crb_pbb_nama_wp', true );
+
+    $color_jenis = ['rgba(255, 99, 132, 0.2)',
+    'rgba(255, 99, 132, 0.2)',
+    'rgba(54, 162, 235, 0.2)',
+    'rgba(255, 206, 86, 0.2)',
+    'rgba(75, 192, 192, 0.2)',
+    'rgba(153, 102, 255, 0.2)',
+    'rgba(255, 159, 64, 0.2)'];
+
+    $datasets[] = array(
+        'label' => $status_bayar_wp,
+        'data' => array(),
+        'backgroundColor' => [
+            $color_jenis
+        ]
+    );
 
     $user_info = get_userdata($user_id);
     $nama_petugas = $user_info->display_name;
@@ -98,29 +114,36 @@ foreach ( $posts as $post ) {
     background: #00000073;
     top: 0;
 }
+
+.center {
+  margin: auto;
+  width: 50%;
+  padding: 10px;
+}
+
 </style>
 <div>
-    <h3 class="text-center">Dashboard Manajemen Pajak <br>Desa: <?php echo get_option('_crb_pbb_desa') ?><br>Nama Petugas: <?php echo $user_name ?></h3>
+    <h3 class="text-center">Dashboard Manajemen Pajak <br><?php echo get_option('_crb_pbb_desa') ?><br>Nama Petugas: <?php echo $user_name ?></h3>
 </div>
 <div style="padding: 10px;">
     <div style="margin-bottom: 20px;">
-    <div class="form-group row" style="padding: 10px; padding-left: 10px;">
-        <div>
-            <label>Tahun Anggaran : </label>
+        <div class="center" style="width:22%;">
+            <label class="text-center">Tahun Anggaran : </label>
             <input type="number" id="tahun_anggaran" value="<?php echo date('Y') ?>" style="margin-right: 20px;">
         </div>
-        <?php
-            echo $list_petugas;
-        ?>
-        <div>
-            <label>Ubah status bayar : </label>
-            <select id="status_bayar" style="min-width: 250px; margin-right: 20px;">
-                <?php echo $this->data_status_bayar(array('type' => 'html'), $user_role[0]); ?>
-            </select>
-        </div>
+    <div style="width: 100%; max-width: 1500px; max-height: 1000px; margin: auto; margin-bottom: 25px;">
+        <canvas id="myChart"></canvas>
     </div>
-        
-        <a onclick="bayar_pajak(); return false" href="javascript:void(0);" class="button button-primary">Simpan Status Pajak</a>
+        <div class="form-group row" style="padding: 10px; padding-left: 10px;">
+            <div>
+                <input type="hidden" id="petugas_pajak" name="petugas_pajak" value="<?php echo $user_id ?>">'
+                <label>Ubah status bayar : </label>
+                <select id="status_bayar" style="min-width: 250px; margin-right: 20px;">
+                    <?php echo $this->data_status_bayar(array('type' => 'html'), $user_role[0]); ?>
+                </select>
+            </div>
+            <a onclick="bayar_pajak(); return false" href="javascript:void(0);" class="button button-primary">Simpan Status Pajak</a>
+        </div>
     </div>
     <table id="user-table-pembayaran-pbb" class="table table-bordered" cellspacing="0" width="100%">
         <thead>
@@ -146,3 +169,111 @@ foreach ( $posts as $post ) {
         </tfoot>
     </table>
 </div>
+
+<script>
+
+
+jQuery(document).ready(function() {
+    var loading = ''
+        +'<div id="wrap-loading">'
+            +'<div class="lds-hourglass"></div>'
+            +'<div id="persen-loading"></div>'
+        +'</div>';
+    if(jQuery('#wrap-loading').length == 0){
+        jQuery('body').prepend(loading);
+    }
+
+    var table = jQuery('#user-table-pembayaran-pbb').DataTable({     
+        'columnDefs': [
+            {
+                'targets': 0,
+                'checkboxes': {
+                    'selectRow': true
+                }
+            }
+        ],
+        'select': {
+            'style': 'multi'
+        },
+        'order': [[1, 'asc']],
+        lengthMenu: [[20, 50, 100, -1], [20, 50, 100, "All"]],
+        footerCallback: function ( row, data, start, end, display ) {
+            var api = this.api();
+            var total_page = api.column( 6, { page: 'current'} )
+                .data()
+                .reduce( function (a, b) {
+                    return a + to_number(b);
+                }, 0 );
+            jQuery('#total_all').text(formatRupiah(total_page));
+
+            if(pieChart2){
+                var labels = [];
+                var datasets = {};
+                pieChart2.data.datasets.map(function(b, i){
+                    pieChart2.data.datasets[i].data = [];
+                    datasets[pieChart2.data.datasets[i].label] = i;
+                });
+                api.rows( {page:'current'} ).data().map(function(b, i){
+                    var key = (b[5]).substring(0, 50);
+                    labels.push(key);
+                    const counts = [];
+                    var status = [];
+                    labels.forEach(function(x){
+                        counts[x] = (counts[x] || 0) + 1;
+                        if (counts[x] == counts[x]) {
+                            status = status+1;
+                        }
+                        pieChart2.data.datasets[datasets[key]].data[i] = to_number(counts[x]);
+                    });
+                });
+                if(labels.length >= 1){
+                    pieChart2.data.labels = labels;
+                    pieChart2.update();
+                }
+            }
+        }
+
+        
+    });
+
+    jQuery('#tahun_anggaran').on('change', function(){
+        get_wajib_pajak();
+    });
+});
+
+window.pieChart2 = new Chart(document.getElementById('myChart'), {
+    type: 'bar',
+    data: {
+        labels: [],
+        datasets: <?php echo json_encode($datasets); ?>
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top',
+                labels: {
+                    font: {
+                        size: 16
+                    }
+                }
+            },
+            tooltip: {
+                bodyFont: {
+                    size: 16
+                },
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                boxPadding: 5
+            },
+        },
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+
+    
+</script>

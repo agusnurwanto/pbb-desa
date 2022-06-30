@@ -102,6 +102,7 @@ class Pbb_Desa_Public {
 		wp_enqueue_script($this->plugin_name . 'bootstrap', plugin_dir_url(__FILE__) . 'js/bootstrap.bundle.min.js', array('jquery'), $this->version, false);
 		wp_enqueue_script($this->plugin_name . 'datatables', plugin_dir_url(__FILE__) . 'js/jquery.dataTables.min.js', array('jquery'), $this->version, false);
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/pbb-desa-public.js', array( 'jquery' ), $this->version.'.'.time(), false );
+		wp_enqueue_script($this->plugin_name . 'chart', plugin_dir_url(__FILE__) . 'js/chart.min.js', array('jquery'), $this->version, false);
 		wp_localize_script( $this->plugin_name, 'pbb', array(
 		    'status_bayar' => $this->data_status_bayar(array('type' => 'html_color'))
 		));
@@ -289,6 +290,7 @@ class Pbb_Desa_Public {
 
 	function get_wajib_pajak(){
 		global $wpdb;
+		echo json_encode($_POST);
 		$ret = array(
 			'status'	=> 'success',
 			'message'	=> 'Berhasil get wajib pajak!'

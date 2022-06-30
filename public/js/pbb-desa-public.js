@@ -123,47 +123,6 @@ function tableHtmlToExcel(tableID, filename = ''){
     }
 }
 
-jQuery(document).ready(function() {
-    var loading = ''
-        +'<div id="wrap-loading">'
-            +'<div class="lds-hourglass"></div>'
-            +'<div id="persen-loading"></div>'
-        +'</div>';
-    if(jQuery('#wrap-loading').length == 0){
-        jQuery('body').prepend(loading);
-    }
-
-    var table = jQuery('#user-table-pembayaran-pbb').DataTable({     
-        'columnDefs': [
-            {
-                'targets': 0,
-                'checkboxes': {
-                    'selectRow': true
-                }
-            }
-        ],
-        'select': {
-            'style': 'multi'
-        },
-        'order': [[1, 'asc']],
-        lengthMenu: [[20, 50, 100, -1], [20, 50, 100, "All"]],
-        footerCallback: function ( row, data, start, end, display ) {
-            var api = this.api();
-            var total_page = api.column( 6, { page: 'current'} )
-                .data()
-                .reduce( function (a, b) {
-                    return a + to_number(b);
-                }, 0 );
-            jQuery('#total_all').text(formatRupiah(total_page));
-        }
-    });
-
-    jQuery('#petugas_pajak').on('change', function(){
-        get_wajib_pajak();
-    });
-      
-});
-
 function formatRupiah(angka, prefix){
     var cek_minus = false;
     if(!angka || angka == '' || angka == 0){
@@ -271,6 +230,7 @@ function get_wajib_pajak(){
         },
         success: function(res){
             res = JSON.parse(res);
+            console.log(res);
             var data_wp = '';
             var data_wp_kosong = ''
                 +'<tr>'
