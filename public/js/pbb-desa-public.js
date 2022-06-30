@@ -230,7 +230,6 @@ function get_wajib_pajak(){
         },
         success: function(res){
             res = JSON.parse(res);
-            console.log(res);
             var data_wp = '';
             var data_wp_kosong = ''
                 +'<tr>'

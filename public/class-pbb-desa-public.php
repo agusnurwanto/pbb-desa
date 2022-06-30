@@ -290,7 +290,6 @@ class Pbb_Desa_Public {
 
 	function get_wajib_pajak(){
 		global $wpdb;
-		echo json_encode($_POST);
 		$ret = array(
 			'status'	=> 'success',
 			'message'	=> 'Berhasil get wajib pajak!'

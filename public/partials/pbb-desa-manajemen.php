@@ -217,15 +217,20 @@ jQuery(document).ready(function() {
                     var key = (b[5]).substring(0, 50);
                     labels.push(key);
                     const counts = [];
-                    var status = [];
-                    labels.forEach(function(x){
-                        counts[x] = (counts[x] || 0) + 1;
-                        if (counts[x] == counts[x]) {
-                            status = status+1;
+                    labels.forEach(function(x, i){
+                        if (typeof counts[x] == 'undefined') {
+                            counts[x] = 1;
+                        }else {
+                            counts[x] += 1;
                         }
-                        pieChart2.data.datasets[datasets[key]].data[i] = to_number(counts[x]);
                     });
+
+                    console.log(counts[key]);
+                    pieChart2.data.datasets[datasets[key]].data[i] = to_number(counts[key]);
+
                 });
+
+
                 if(labels.length >= 1){
                     pieChart2.data.labels = labels;
                     pieChart2.update();
