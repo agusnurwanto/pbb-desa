@@ -50,6 +50,13 @@ if ($user_role == 'pengawas') {
         ';
 }
 $datasets = array();
+$color_jenis = array(
+    'Belum Bayar' => 'rgba(255, 99, 132, 1)',
+    'Diterima Petugas Pajak' => 'rgba(54, 162, 235, 1)',
+    'Diterima Bendahara Desa' => 'rgba(255, 206, 86, 1)',
+    'Diterima Kecamatan' => 'rgba(75, 192, 192, 1)',
+    'Lunas' => 'rgba(153, 102, 255, 1)'
+);
 
 foreach ( $posts as $post ) {
     $i++;
@@ -67,21 +74,6 @@ foreach ( $posts as $post ) {
     $nop = get_post_meta( $post->ID, '_crb_pbb_nop', true );
     $nama_wp = get_post_meta( $post->ID, '_crb_pbb_nama_wp', true );
 
-    $color_jenis = ['rgba(255, 99, 132, 0.2)',
-    'rgba(255, 99, 132, 0.2)',
-    'rgba(54, 162, 235, 0.2)',
-    'rgba(255, 206, 86, 0.2)',
-    'rgba(75, 192, 192, 0.2)',
-    'rgba(153, 102, 255, 0.2)',
-    'rgba(255, 159, 64, 0.2)'];
-
-    $datasets[] = array(
-        'label' => $status_bayar_wp,
-        'data' => array(),
-        'backgroundColor' => [
-            $color_jenis
-        ]
-    );
 
     $user_info = get_userdata($user_id);
     $nama_petugas = $user_info->display_name;
@@ -97,6 +89,24 @@ foreach ( $posts as $post ) {
         <td style="text-align: center;">'.get_post_meta( $post->ID, '_crb_pbb_tgl_bayar', true ).'</td>
         <td style="text-align: center;">'.$nama_petugas.'</td>
     </tr>';
+
+    if(empty($datasets[$status_bayar_wp])){
+        $datasets[$status_bayar_wp] = array(
+            'label' => $status_bayar_wp,
+            'data' => array(0),
+            'backgroundColor' => [
+                $color_jenis[$status_bayar_wp]
+            ]
+        );
+    }
+    $datasets[$status_bayar_wp]['data'][0] += 1;
+}
+
+$labels = array();
+$newDatashets = array();
+foreach($datasets as $k => $v){
+    $labels[] = $k;
+    $newDatashets[] = $v;
 }
 
 ?>
@@ -122,18 +132,16 @@ foreach ( $posts as $post ) {
 }
 
 </style>
-<div>
-    <h3 class="text-center">Dashboard Manajemen Pajak <br><?php echo get_option('_crb_pbb_desa') ?><br>Nama Petugas: <?php echo $user_name ?></h3>
+<div class="text-center">
+    <h3>Dashboard Manajemen Pajak <br><?php echo get_option('_crb_pbb_desa') ?><br>Nama Petugas: <?php echo $user_name ?></h3>
+    <label class="text-center">Tahun Anggaran : </label>
+    <input type="number" id="tahun_anggaran" value="<?php echo date('Y') ?>">
 </div>
 <div style="padding: 10px;">
     <div style="margin-bottom: 20px;">
-        <div class="center" style="width:22%;">
-            <label class="text-center">Tahun Anggaran : </label>
-            <input type="number" id="tahun_anggaran" value="<?php echo date('Y') ?>" style="margin-right: 20px;">
+        <div style="width: 100%; padding: 10px; max-width: 1000px; max-height: 1000px; margin: auto; margin-bottom: 25px;">
+            <canvas id="myChart"></canvas>
         </div>
-    <div style="width: 100%; max-width: 1500px; max-height: 1000px; margin: auto; margin-bottom: 25px;">
-        <canvas id="myChart"></canvas>
-    </div>
         <div class="form-group row" style="padding: 10px; padding-left: 10px;">
             <div>
                 <input type="hidden" id="petugas_pajak" name="petugas_pajak" value="<?php echo $user_id ?>">'
@@ -207,34 +215,27 @@ jQuery(document).ready(function() {
             jQuery('#total_all').text(formatRupiah(total_page));
 
             if(pieChart2){
-                var labels = [];
                 var datasets = {};
-                pieChart2.data.datasets.map(function(b, i){
-                    pieChart2.data.datasets[i].data = [];
-                    datasets[pieChart2.data.datasets[i].label] = i;
-                });
+                pieChart2.data.datasets = [];
                 api.rows( {page:'current'} ).data().map(function(b, i){
                     var key = (b[5]).substring(0, 50);
-                    labels.push(key);
-                    const counts = [];
-                    labels.forEach(function(x, i){
-                        if (typeof counts[x] == 'undefined') {
-                            counts[x] = 1;
-                        }else {
-                            counts[x] += 1;
+                    if(!datasets[key]){
+                        datasets[key] = {
+                            label: key,
+                            data: [0],
+                            backgroundColor: [
+                                color_jenis[key]
+                            ]
                         }
-                    });
-
-                    console.log(counts[key]);
-                    pieChart2.data.datasets[datasets[key]].data[i] = to_number(counts[key]);
-
+                    }
+                    datasets[key].data[0]++;
                 });
-
-
-                if(labels.length >= 1){
-                    pieChart2.data.labels = labels;
-                    pieChart2.update();
+                var newDatasets = [];
+                for(var i in datasets){
+                    newDatasets.push(datasets[i]);
                 }
+                pieChart2.data.datasets = newDatasets;
+                pieChart2.update();
             }
         }
 
@@ -246,17 +247,18 @@ jQuery(document).ready(function() {
     });
 });
 
+window.color_jenis = <?php echo json_encode($color_jenis); ?>;
 window.pieChart2 = new Chart(document.getElementById('myChart'), {
     type: 'bar',
     data: {
-        labels: [],
-        datasets: <?php echo json_encode($datasets); ?>
+        labels: ['Rekapitulasi pembayaran pajak'],
+        datasets: <?php echo json_encode($newDatashets); ?>
     },
     options: {
         responsive: true,
         plugins: {
             legend: {
-                position: 'top',
+                position: 'bottom',
                 labels: {
                     font: {
                         size: 16
@@ -267,7 +269,6 @@ window.pieChart2 = new Chart(document.getElementById('myChart'), {
                 bodyFont: {
                     size: 16
                 },
-                backgroundColor: 'rgba(0, 0, 0, 0.8)',
                 boxPadding: 5
             },
         },
