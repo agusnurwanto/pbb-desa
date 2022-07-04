@@ -133,27 +133,62 @@ class Pbb_Desa_Public {
 		if(!empty($_GET) && !empty($_GET['post'])){
 			return '';
 		}
+		
 		require_once plugin_dir_path(dirname(__FILE__)) . 'public/partials/pbb-desa-manajemen.php';
+	}
+
+	public function manajemen_pbb_pengawas($atts)
+	{
+		// untuk disable render shortcode di halaman edit page/post
+		if(!empty($_GET) && !empty($_GET['post'])){
+			return '';
+		}
+
+		require_once plugin_dir_path(dirname(__FILE__)) . 'public/partials/pbb-desa-manajemen-pengawas.php';
 	}
 
 	public function menu_manajemen_pbb($atts)
 	{
-		$nama_page = 'Manajemen Pajak Desa';
-		$url_page = $this->generatePage($nama_page, '[manajemen_pbb]');
-		echo '
-			<ul class="pbb-desa-manajemen">
-				<li><a href="'.$url_page.'" target="_blank" class="btn btn-info">'.$nama_page.'</a></li>
-			</ul>
-			<style>
-				.pbb-desa-manajemen{
-					margin: 0;
-				}
-				.pbb-desa-manajemen li {
-					list-style: none;
-					text-align: center;
-				}
-			</style>
-		';
+
+		$user_id = get_current_user_id();
+		$user_meta = get_userdata($user_id);
+		$user_role = $user_meta->roles;
+
+		if ($user_role[0] == 'pengawas_pajak') {
+			$nama_page = 'Manajemen Pajak Desa Pengawas';
+			$url_page = $this->generatePage($nama_page, '[manajemen_pbb_pengawas]');
+			echo '
+				<ul class="pbb-desa-manajemen">
+					<li><a href="'.$url_page.'" target="_blank" class="btn btn-info">'.$nama_page.'</a></li>
+				</ul>
+				<style>
+					.pbb-desa-manajemen{
+						margin: 0;
+					}
+					.pbb-desa-manajemen li {
+						list-style: none;
+						text-align: center;
+					}
+				</style>
+			';
+		}else {
+			$nama_page = 'Manajemen Pajak Desa';
+			$url_page = $this->generatePage($nama_page, '[manajemen_pbb]');
+			echo '
+				<ul class="pbb-desa-manajemen">
+					<li><a href="'.$url_page.'" target="_blank" class="btn btn-info">'.$nama_page.'</a></li>
+				</ul>
+				<style>
+					.pbb-desa-manajemen{
+						margin: 0;
+					}
+					.pbb-desa-manajemen li {
+						list-style: none;
+						text-align: center;
+					}
+				</style>
+			';
+		}
 	}
 
 	public function get_link_post($custom_post){
