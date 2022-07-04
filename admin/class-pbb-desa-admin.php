@@ -477,6 +477,7 @@ class Pbb_Desa_Admin {
 			    'order' => 'ASC'
 			));
 			$data_all = array();
+			$selected_data = array();
 			foreach ( $posts as $post ) {
 				$nilai = get_post_meta( $post->ID, '_crb_pbb_ketetapan_pbb', true );
 				if(empty($nilai)){
@@ -503,8 +504,27 @@ class Pbb_Desa_Admin {
 					'crb_pbb_url'	=> get_permalink( $post ),
 					'crb_display_name'	=> $nama_petugas
 				);
+
+				if ($status == $_POST['status_bayar'] && $_POST['status_bayar'] != '' ) {
+					$selected_data[] = array(
+						'post_id' => $post->ID,
+						'crb_pbb_nop'	=> $nop,
+						'crb_pbb_nama_wp'	=> $nama_wp,
+						'crb_pbb_alamat_op'	=> get_post_meta( $post->ID, '_crb_pbb_alamat_op', true ),
+						'crb_pbb_status_bayar'	=> $status,
+						'crb_pbb_ketetapan_pbb'	=> 'Rp '.number_format($nilai,0,",","."),
+						'crb_pbb_tgl'	=> get_post_meta( $post->ID, '_crb_pbb_tgl_bayar', true ),
+						'crb_pbb_url'	=> get_permalink( $post ),
+						'crb_display_name'	=> $nama_petugas
+					);
+				}
 		    }
-		    $ret['data'] = $data_all;
+			if (!empty($selected_data)) {
+				$ret['data'] = $selected_data;
+			}else {
+				$ret['data'] = $data_all;
+			}
+
 		} else {
 			$ret['status'] = 'error';
 			$ret['message'] = 'Format Salah!';

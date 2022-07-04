@@ -133,7 +133,7 @@ class Pbb_Desa_Public {
 		if(!empty($_GET) && !empty($_GET['post'])){
 			return '';
 		}
-		
+
 		require_once plugin_dir_path(dirname(__FILE__)) . 'public/partials/pbb-desa-manajemen.php';
 	}
 
@@ -321,74 +321,6 @@ class Pbb_Desa_Public {
 			$_post['update'] = 1;
 		}
 		return $this->get_link_post($custom_post);
-	}
-
-	function get_wajib_pajak(){
-		global $wpdb;
-		$ret = array(
-			'status'	=> 'success',
-			'message'	=> 'Berhasil get wajib pajak!'
-		);
-		if (!empty($_POST)) {
-			$filter_query = array(
-		        array(
-		            'key'   => '_crb_pbb_tahun_anggaran',
-		            'value' => $_POST['tahun_anggaran']
-		        )
-		    );
-		    if(
-		    	empty($_POST['petugas_pajak']) 
-		    	|| $_POST['petugas_pajak'] != 'all'
-		    ){
-		    	$filter_query[] = array(
-		            'key'   => '_crb_pbb_petugas_pajak',
-		            'value' => $_POST['petugas_pajak'],
-		        );
-		    	$filter_query['relation'] = 'AND';
-		    }
-			$posts = get_posts(array( 
-				'numberposts'	=> -1,
-				'post_type' => 'wajib_pajak', 
-				'meta_query' => $filter_query,
-			    'post_status' => 'private',
-			    'meta_key'  => '_crb_pbb_nop',
-			    'orderby'   => 'meta_value_num',
-			    'order' => 'ASC'
-			));
-			$data_all = array();
-			foreach ( $posts as $post ) {
-				$nilai = get_post_meta( $post->ID, '_crb_pbb_ketetapan_pbb', true );
-				if(empty($nilai)){
-					$nilai = 0;
-				}
-				$status = get_post_meta( $post->ID, '_crb_pbb_status_bayar', true );
-				if(empty($status)){
-					$status = 0;
-				}
-				$nop = get_post_meta( $post->ID, '_crb_pbb_nop', true );
-				$nama_wp = get_post_meta( $post->ID, '_crb_pbb_nama_wp', true );
-				$user_id = get_post_meta( $post->ID, '_crb_pbb_petugas_pajak', true );
-
-				$user_info = get_userdata($user_id);
-				$nama_petugas = $user_info->display_name;
-				$data_all[] = array(
-					'post_id' => $post->ID,
-					'crb_pbb_nop'	=> $nop,
-					'crb_pbb_nama_wp'	=> $nama_wp,
-					'crb_pbb_alamat_op'	=> get_post_meta( $post->ID, '_crb_pbb_alamat_op', true ),
-					'crb_pbb_status_bayar'	=> $status,
-					'crb_pbb_ketetapan_pbb'	=> 'Rp '.number_format($nilai,0,",","."),
-					'crb_pbb_tgl'	=> get_post_meta( $post->ID, '_crb_pbb_tgl_bayar', true ),
-					'crb_pbb_url'	=> get_permalink( $post ),
-					'crb_display_name'	=> $nama_petugas
-				);
-		    }
-		    $ret['data'] = $data_all;
-		} else {
-			$ret['status'] = 'error';
-			$ret['message'] = 'Format Salah!';
-		}
-		die(json_encode($ret));
 	}
 
 }

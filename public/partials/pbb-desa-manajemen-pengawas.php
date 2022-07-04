@@ -142,7 +142,7 @@ foreach($datasets as $k => $v){
                     <?php echo $this->data_status_bayar(array('type' => 'html'), $user_role[0]); ?>
                 </select>
             </div>
-            <a onclick="bayar_pajak(); return false" href="javascript:void(0);" class="button button-primary">Simpan Status Pajak</a>
+            <!-- <a onclick="bayar_pajak(); return false" href="javascript:void(0);" class="button button-primary">Simpan Status Pajak</a> -->
         </div>
     </div>
     <table id="user-table-pembayaran-pbb" class="table table-bordered" cellspacing="0" width="100%">
@@ -171,6 +171,7 @@ foreach($datasets as $k => $v){
 </div>
 
 <script>
+
 
 
 jQuery(document).ready(function() {
@@ -236,6 +237,15 @@ jQuery(document).ready(function() {
 
     jQuery('#petugas_pajak').on('change', function(){
         get_wajib_pajak();
+    });
+
+    jQuery('#status_bayar').on('change', function(){
+        petugas_pajak = jQuery('#petugas_pajak').val();
+        if (petugas_pajak) {
+            get_wajib_pajak();
+        }else {
+            alert('Pilih petugas');
+        }
     });
 });
 
