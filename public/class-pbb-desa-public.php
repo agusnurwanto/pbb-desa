@@ -222,7 +222,7 @@ class Pbb_Desa_Public {
 				'0' => 'Belum Bayar',
 				'1' => 'Diterima Petugas Pajak',
 			);
-		}else if ($role == 'pengawas') {
+		}else if ($role == 'pengawas_pajak') {
 			$data = array(
 				'' => 'Pilih Status Pembayaran',
 				'0' => 'Belum Bayar',

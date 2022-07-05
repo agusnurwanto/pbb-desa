@@ -123,7 +123,7 @@ foreach($datasets as $k => $v){
 
 </style>
 <div class="text-center">
-    <h3>Dashboard Manajemen Pajak <br><?php echo get_option('_crb_pbb_desa') ?><br>Nama Petugas: <?php echo $user_name ?></h3>
+    <h3>Dashboard Manajemen Pajak <br><?php echo get_option('_crb_pbb_desa') ?><br>Nama Pengawas: <?php echo $user_name ?></h3>
     <label class="text-center">Tahun Anggaran : </label>
     <input type="number" id="tahun_anggaran" value="<?php echo date('Y') ?>">
     <label>Pilih Petugas Pajak : </label>
@@ -137,7 +137,7 @@ foreach($datasets as $k => $v){
         <div class="form-group row" style="padding: 10px; padding-left: 10px;">
             <div>
                 <input type="hidden" id="petugas_pajak" name="petugas_pajak" value="<?php echo $user_id ?>">'
-                <label>Ubah status bayar : </label>
+                <label>Filter Status Bayar : </label>
                 <select id="status_bayar" style="min-width: 250px; margin-right: 20px;">
                     <?php echo $this->data_status_bayar(array('type' => 'html'), $user_role[0]); ?>
                 </select>

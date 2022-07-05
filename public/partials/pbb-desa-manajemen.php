@@ -7,6 +7,7 @@ $args = array(
 $users_petugas_pajak = get_users( $args );
 $user_id = get_current_user_id();
 $user_meta = get_userdata($user_id);
+$user_role = $user_meta->roles;
 $user_name = $user_meta->display_name;
 
 $tahun_anggaran = date('Y');
