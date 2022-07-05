@@ -478,6 +478,7 @@ class Pbb_Desa_Admin {
 			));
 			$data_all = array();
 			$selected_data = array();
+
 			foreach ( $posts as $post ) {
 				$nilai = get_post_meta( $post->ID, '_crb_pbb_ketetapan_pbb', true );
 				if(empty($nilai)){
