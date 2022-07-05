@@ -367,3 +367,23 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
         console.log(e)
     }
 };
+
+function changeUrl(option){
+    var key = option.key;
+    var value = option.value;
+    var _url = option.url;
+    var url_object = new URL(_url);
+    var value_asli = url_object.searchParams.get(key);
+    var _and = '&';
+    if(_url.indexOf('?') == -1){
+        _url += '?';
+        _and = '';
+    }
+
+    if(_url.indexOf(key) != -1){
+        _url = _url.replace(_and+key+'='+value_asli, _and+key+'='+value);
+    }else{
+        _url += _and+key+'='+value
+    }
+    return _url;
+}

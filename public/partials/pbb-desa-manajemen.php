@@ -1,22 +1,31 @@
 <?php
-
 $args = array(
     'role'    => 'petugas_pajak',
     'orderby' => 'user_nicename',
     'order'   => 'ASC'
 );
-$users = get_users( $args );
-
+$users_petugas_pajak = get_users( $args );
 $user_id = get_current_user_id();
 $user_meta = get_userdata($user_id);
-$user_role = $user_meta->roles;
 $user_name = $user_meta->display_name;
 
-$filter_query[] = array(
-    'key'   => '_crb_pbb_petugas_pajak',
-    'value' => $user_id,
+$tahun_anggaran = date('Y');
+if(!empty($_GET) && !empty($_GET['tahun'])){
+    $tahun_anggaran = $_GET['tahun'];
+}
+$filter_query = array(
+    array(
+        'key'   => '_crb_pbb_tahun_anggaran',
+        'value' => $tahun_anggaran
+    )
 );
-$filter_query['relation'] = 'AND';
+if($this->functions->user_has_role($user_id, 'petugas_pajak')){
+    $filter_query[] = array(
+        'key'   => '_crb_pbb_petugas_pajak',
+        'value' => $user_id,
+    );
+    $filter_query['relation'] = 'AND';
+}
 
 $posts = get_posts(array( 
     'numberposts'	=> -1,
@@ -34,21 +43,12 @@ $list_html = '
 			<option value="">Pilih Petugas</option>
 			<option value="all">Semua Wajib Pajak</option>
 		';
-foreach ( $users as $user ) {
+foreach ( $users_petugas_pajak as $user ) {
     $list[$user->ID] = esc_html( $user->display_name ) . ' (' . esc_html( $user->user_email ) . ')';
     $list_html .= '<option value="'.$user->ID.'">'.$list[$user->ID].'</option>';
 }
 $list_petugas = ' <input type="hidden" id="petugas_pajak" name="petugas_pajak" value="'.$user_id.'">';
 
-
-if ($user_role == 'pengawas') {
-    $list_petugas = '
-        <div>
-            <label>Pilih Petugas Pajak : </label>
-            <select id="petugas_pajak" style="min-width: 250">'.$list_html.'</select>
-        </div>
-        ';
-}
 $datasets = array();
 $color_jenis = array(
     'Belum Bayar' => 'rgba(255, 99, 132, 1)',
@@ -135,7 +135,7 @@ foreach($datasets as $k => $v){
 <div class="text-center">
     <h3>Dashboard Manajemen Pajak <br><?php echo get_option('_crb_pbb_desa') ?><br>Nama Petugas: <?php echo $user_name ?></h3>
     <label class="text-center">Tahun Anggaran : </label>
-    <input type="number" id="tahun_anggaran" value="<?php echo date('Y') ?>">
+    <input type="number" id="tahun_anggaran" value="<?php echo $tahun_anggaran; ?>">
 </div>
 <div style="padding: 10px;">
     <div style="margin-bottom: 20px;">
@@ -177,10 +177,10 @@ foreach($datasets as $k => $v){
         </tfoot>
     </table>
 </div>
-
 <script>
-
-
+var _url_asli = window.location.href;
+var url = new URL(_url_asli);
+_url_asli = changeUrl({ url: _url_asli, key: 'key', value: '<?php echo $this->functions->gen_key(); ?>' });
 jQuery(document).ready(function() {
     var loading = ''
         +'<div id="wrap-loading">'
@@ -191,7 +191,7 @@ jQuery(document).ready(function() {
         jQuery('body').prepend(loading);
     }
 
-    var table = jQuery('#user-table-pembayaran-pbb').DataTable({     
+    window.table = jQuery('#user-table-pembayaran-pbb').DataTable({     
         'columnDefs': [
             {
                 'targets': 0,
@@ -243,7 +243,8 @@ jQuery(document).ready(function() {
     });
 
     jQuery('#tahun_anggaran').on('change', function(){
-        get_wajib_pajak();
+        var url = changeUrl({ url: _url_asli, key: 'tahun', value: jQuery(this).val() });
+        window.location.href = url;
     });
 });
 
@@ -279,7 +280,4 @@ window.pieChart2 = new Chart(document.getElementById('myChart'), {
         }
     }
 });
-
-
-    
 </script>
