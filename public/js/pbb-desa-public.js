@@ -220,13 +220,16 @@ function get_wajib_pajak(){
     get_data_list();
     var tahun_anggaran = jQuery('#tahun_anggaran').val();
     var petugas_pajak = jQuery('#petugas_pajak').val();
+    var status_bayar = jQuery('#status_bayar').val();
+
     jQuery.ajax({
         url: ajaxurl,
         type: 'post',
         data: {
             action: 'get_wajib_pajak',
             tahun_anggaran: tahun_anggaran,
-            petugas_pajak: petugas_pajak
+            petugas_pajak: petugas_pajak,
+            status_bayar: status_bayar,
         },
         success: function(res){
             res = JSON.parse(res);
