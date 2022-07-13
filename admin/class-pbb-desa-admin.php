@@ -109,41 +109,9 @@ class Pbb_Desa_Admin {
 		wp_enqueue_script($this->plugin_name . 'datatables', plugin_dir_url(__FILE__) . 'js/jquery.dataTables.min.js', array('jquery'), $this->version, false);
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/pbb-desa-admin.js', array( 'jquery' ), $this->version.'.'.time(), false );
 		wp_localize_script( $this->plugin_name, 'pbb', array(
-		    'status_bayar' => $this->data_status_bayar(array('type' => 'html_color'))
+		    'status_bayar' => $this->functions->data_status_bayar(array('type' => 'html_color'))
 		));
 
-	}
-
-	public function data_status_bayar($option = array('type' => false)){
-		$data = array(
-    		'' => 'Pilih Status Pembayaran',
-    		'0' => 'Belum Bayar',
-    		'1' => 'Diterima Petugas Pajak',
-    		'2' => 'Diterima Bendahara Desa',
-    		'3' => 'Diterima Kecamatan',
-    		'4' => 'Lunas'
-    	);
-		if($option['type'] == 'html'){
-			$html = '';
-			foreach ($data as $k => $v) {
-				$html .= '<option value="'.$k.'">'.$v.'</option>';
-			}
-			return $html;
-		}else if($option['type'] == 'html_color'){
-			$new_data = array();
-			foreach ($data as $k => $v) {
-				if($k >= 1 && $k <=3){
-					$new_data[$k] = '<span style="color: orange; font-weight: bold;">'.$v.'</span>';
-				}else if($k == 4){
-					$new_data[$k] = '<span style="color: green; font-weight: bold;">'.$v.'</span>';
-				}else{
-					$new_data[$k] = '<span style="color: red; font-weight: bold;">'.$v.'</span>';
-				}
-			}
-			return $new_data;
-		}else{
-			return $data;
-		}
 	}
 
 	public function generateRandomString($length = 10) {
@@ -264,7 +232,7 @@ class Pbb_Desa_Admin {
 	            	->set_html( '
 	            		Ubah status bayar : 
 	            		<select id="status_bayar" style="min-width: 250px; margin-right: 20px;">
-	            			'.$this->data_status_bayar(array('type' => 'html')).'
+	            			'.$this->functions->data_status_bayar(array('type' => 'html')).'
 	            		</select>
 	            		<a onclick="bayar_pajak(); return false" href="javascript:void(0);" class="button button-primary">Simpan Status Pajak</a>
 	            ' ),
@@ -336,7 +304,7 @@ class Pbb_Desa_Admin {
 		    ->where( 'post_type', '=', 'wajib_pajak' )
 	        ->add_fields( array(
 	            Field::make( 'select', 'crb_pbb_status_bayar', 'Status Pembayaran' )
-	            	->add_options(  $this->data_status_bayar() ),
+	            	->add_options(  $this->functions->data_status_bayar() ),
 	            Field::make( 'date_time', 'crb_pbb_tgl_bayar', 'Tanggal Transaksi' ),
 	            Field::make( 'text', 'crb_pbb_tahun_anggaran', 'Tahun Anggaran' ),
 	            Field::make( 'select', 'crb_pbb_petugas_pajak', 'Petugas Pajak' )
@@ -583,7 +551,7 @@ class Pbb_Desa_Admin {
 			$status_notif_wa = get_option('_crb_status_notif_wa');
 			$tgl_bayar = date('Y-m-d H:i:s');
 			$data_bayar = array();
-			$status_bayar = $this->data_status_bayar();
+			$status_bayar = $this->functions->data_status_bayar();
 			$nilai_total = 0;
 			$status_bayar_wp = '';
 			$petugas_pajak_all = array();
@@ -629,7 +597,7 @@ class Pbb_Desa_Admin {
 							$nop,
 							$status_bayar_wp,
 							$tgl_bayar,
-							$this->function->get_link_post($post_id, true)
+							$this->functions->get_link_post($post_id, true)
 						), $pesan);
 						$this->send_notif_wa(array(
 							'number' => $no_wp,
@@ -847,7 +815,7 @@ class Pbb_Desa_Admin {
 							'Lunas: *Rp '.number_format($total_lunas,0,",",".").'*'.
 							PHP_EOL.
 							PHP_EOL.
-							'Informasi lebih detail bisa dilihat di *'.$this->function->get_link_post($custom_post, true).'*';
+							'Informasi lebih detail bisa dilihat di *'.$this->functions->get_link_post($custom_post, true).'*';
 
 						$this->send_notif_wa(array(
 							'number' => $pengirim,

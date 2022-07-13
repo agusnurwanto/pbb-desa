@@ -18,7 +18,7 @@ $nilai = get_post_meta( $post->ID, '_crb_pbb_ketetapan_pbb', true );
 if(empty($nilai)){
 	$nilai = 0;
 }
-$status_bayar = $this->class_admin->data_status_bayar(array('type' => 'html_color'));
+$status_bayar = $this->functions->data_status_bayar(array('type' => 'html_color'));
 $status = get_post_meta( $post->ID, '_crb_pbb_status_bayar', true );
 if(empty($status)){
 	$status = 0;

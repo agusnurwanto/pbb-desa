@@ -286,4 +286,36 @@ class Pbb_Desa_Functions
         }
         return $res;
     }
+
+	public function data_status_bayar($option = array('type' => false)){
+		$data = array(
+    		'' => 'Pilih Status Pembayaran',
+    		'0' => 'Belum Bayar',
+    		'1' => 'Diterima Petugas Pajak',
+    		'2' => 'Diterima Bendahara Desa',
+    		'3' => 'Diterima Kecamatan',
+    		'4' => 'Lunas'
+    	);
+		if($option['type'] == 'html'){
+			$html = '';
+			foreach ($data as $k => $v) {
+				$html .= '<option value="'.$k.'">'.$v.'</option>';
+			}
+			return $html;
+		}else if($option['type'] == 'html_color'){
+			$new_data = array();
+			foreach ($data as $k => $v) {
+				if($k >= 1 && $k <=3){
+					$new_data[$k] = '<span style="color: orange; font-weight: bold;">'.$v.'</span>';
+				}else if($k == 4){
+					$new_data[$k] = '<span style="color: green; font-weight: bold;">'.$v.'</span>';
+				}else{
+					$new_data[$k] = '<span style="color: red; font-weight: bold;">'.$v.'</span>';
+				}
+			}
+			return $new_data;
+		}else{
+			return $data;
+		}
+	}
 }
