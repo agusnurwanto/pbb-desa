@@ -7,7 +7,7 @@ $body = '<tr><td colspan="9" class="text_tengah">Data kosong. Harap pilih dulu d
 $total_nilai = 0;
 if(!empty($_GET['data_list'])){
 	$list = explode(',', $_GET['data_list']);
-	$data_status = $this->data_status_bayar();
+	$data_status = $this->functions->data_status_bayar();
 	$body_array = [];
 	foreach ($list as $k => $id_post) {
 		$post = get_post($id_post);
