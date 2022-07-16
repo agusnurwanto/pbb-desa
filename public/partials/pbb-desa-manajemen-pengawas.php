@@ -69,7 +69,6 @@ foreach ( $posts as $post ) {
     $nama_petugas = $user_info->display_name;
     $body_table .= '
     <tr>
-        <td style="text-align: center;" data-post-id="'.$post->ID.'" class="table-pbb-desa"></td>
         <td style="text-align: center;">'.$i.'</td>
         <td style="text-align: center;">'.$nop.'</td>
         <td>'.$nama_wp.'</td>
@@ -148,7 +147,6 @@ foreach($datasets as $k => $v){
     <table id="user-table-pembayaran-pbb" class="table table-bordered" cellspacing="0" width="100%">
         <thead>
             <tr>
-                <th></th>
                 <th style="width: 45px;">No</th>
                 <th style="width: 170px;">No. Object Pajak</th>
                 <th style="width: 170px;">Nama Wajib Pajak</th>
@@ -163,7 +161,7 @@ foreach($datasets as $k => $v){
             <?php echo $body_table ?>
         </tbody>
         <tfoot>
-            <th colspan="6">Total</th>
+            <th colspan="5">Total</th>
             <th id="total_all" class="text_kanan"></th>
             <th colspan="2"></th>
         </tfoot>
@@ -171,9 +169,9 @@ foreach($datasets as $k => $v){
 </div>
 
 <script>
-
-
-
+var _url_asli = window.location.href;
+var url = new URL(_url_asli);
+_url_asli = changeUrl({ url: _url_asli, key: 'key', value: '<?php echo $this->functions->gen_key(); ?>' });
 jQuery(document).ready(function() {
     var loading = ''
         +'<div id="wrap-loading">'
@@ -184,18 +182,7 @@ jQuery(document).ready(function() {
         jQuery('body').prepend(loading);
     }
 
-    var table = jQuery('#user-table-pembayaran-pbb').DataTable({     
-        'columnDefs': [
-            {
-                'targets': 0,
-                'checkboxes': {
-                    'selectRow': true
-                }
-            }
-        ],
-        'select': {
-            'style': 'multi'
-        },
+    window.table = jQuery('#user-table-pembayaran-pbb').DataTable({
         'order': [[1, 'asc']],
         lengthMenu: [[20, 50, 100, -1], [20, 50, 100, "All"]],
         footerCallback: function ( row, data, start, end, display ) {
@@ -231,22 +218,25 @@ jQuery(document).ready(function() {
                 pieChart2.update();
             }
         }
-
-        
     });
 
     jQuery('#petugas_pajak').on('change', function(){
-        get_wajib_pajak();
+        var url = changeUrl({ url: _url_asli, key: 'petugas_pajak', value: jQuery(this).val() });
+        window.location.href = url;
     });
-
+            
     jQuery('#status_bayar').on('change', function(){
         petugas_pajak = jQuery('#petugas_pajak').val();
         if (petugas_pajak) {
-            get_wajib_pajak();
+            get_wajib_pajak_pengawas();
         }else {
             alert('Pilih petugas');
         }
     });
+
+    // jQuery('#petugas_pajak').on('change', function(){
+    //     get_wajib_pajak_pengawas();
+    // });
 });
 
 window.color_jenis = <?php echo json_encode($color_jenis); ?>;
