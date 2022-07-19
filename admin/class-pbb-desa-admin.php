@@ -142,9 +142,21 @@ class Pbb_Desa_Admin {
 		    $list[$user->ID] = esc_html( $user->display_name ) . ' (' . esc_html( $user->user_email ) . ')';
 		    $list_html .= '<option value="'.$user->ID.'">'.$list[$user->ID].'</option>';
 		}
+
+		$tahun = get_option('_crb_pbb_tahun_anggaran'); 
+		$desa = get_option('_crb_pbb_desa'); 
+		$title = 'PBB Desa '.$desa.' tahun '.$tahun;
+		$content = '[monitor_all_pajak tahun_anggaran="'.$tahun.'"]';
+
+		$link_monev = $this->generatePage($title, $content);
+
 		$basic_options_container = Container::make( 'theme_options', __( 'PBB Options' ) )
 			->set_page_menu_position( 4 )
 	        ->add_fields( array(
+				Field::make( 'html', 'crb_monev' )
+		        	->set_html( '
+		        		<a href="'.$link_monev.'" target="_blank">Laporan PBB Desa</a>
+		        	' ),
 	            Field::make( 'text', 'crb_pbb_tahun_anggaran', 'Tahun Anggaran' )
 	            	->set_default_value('2021')
 	            	->set_attribute('placeholder', '2021'),
@@ -856,5 +868,67 @@ class Pbb_Desa_Admin {
 		}else{
 			return $value;
 		}
+	}
+
+	public function generatePage($nama_page, $content = false, $update = false){
+		$custom_post = get_page_by_title($nama_page, OBJECT, 'page');
+
+		$_post = array(
+			'post_title'	=> $nama_page,
+			'post_content'	=> $content,
+			'post_type'		=> 'page',
+			'post_status'	=> 'private',
+			'comment_status'	=> 'closed'
+		);
+		if (empty($custom_post) || empty($custom_post->ID)) {
+			$id = wp_insert_post($_post);
+			$_post['insert'] = 1;
+			$_post['ID'] = $id;
+			$custom_post = get_page_by_title($nama_page, OBJECT, 'page');
+			update_post_meta($custom_post->ID, 'ast-breadcrumbs-content', 'disabled');
+			update_post_meta($custom_post->ID, 'ast-featured-img', 'disabled');
+			update_post_meta($custom_post->ID, 'ast-main-header-display', 'disabled');
+			update_post_meta($custom_post->ID, 'footer-sml-layout', 'disabled');
+			update_post_meta($custom_post->ID, 'site-content-layout', 'page-builder');
+			update_post_meta($custom_post->ID, 'site-post-title', 'disabled');
+			update_post_meta($custom_post->ID, 'site-sidebar-layout', 'no-sidebar');
+			update_post_meta($custom_post->ID, 'theme-transparent-header-meta', 'disabled');
+		}else if($update){
+			$_post['ID'] = $custom_post->ID;
+			wp_update_post( $_post );
+			$_post['update'] = 1;
+		}
+		return $this->get_link_post($custom_post);
+	}
+
+	public function get_link_post($custom_post){
+		$link = get_permalink($custom_post);
+		$options = array();
+		if(!empty($custom_post->custom_url)){
+			$options['custom_url'] = $custom_post->custom_url;
+		}
+		if(strpos($link, '?') === false){
+			$link .= '?key=' . $this->gen_key(false, $options);
+		}else{
+			$link .= '&key=' . $this->gen_key(false, $options);
+		}
+		return $link;
+	}
+
+	function gen_key($key_db = false, $options = array()){
+		$now = time()*1000;
+		if(empty($key_db)){
+			$key_db = md5(get_option( '_crb_pbb_api_key' ));
+		}
+		$tambahan_url = '';
+		if(!empty($options['custom_url'])){
+			$custom_url = array();
+			foreach ($options['custom_url'] as $k => $v) {
+				$custom_url[] = $v['key'].'='.$v['value'];
+			}
+			$tambahan_url = $key_db.implode('&', $custom_url);
+		}
+		$key = base64_encode($now.$key_db.$now.$tambahan_url);
+		return $key;
 	}
 }

@@ -1,6 +1,6 @@
 <?php
 $input = shortcode_atts( array(
-	'tahun_anggaran' => '2021'
+	'tahun_anggaran' => get_option('_crb_pbb_tahun_anggaran')
 ), $atts );
 global $wpdb;
 
@@ -8,17 +8,18 @@ $posts = get_posts(array(
 	'numberposts'	=> -1,
 	'post_type' => 'wajib_pajak', 
 	'meta_query' => array(
-        array(
-            'key'   => '_crb_pbb_tahun_anggaran',
-            'value' => $input['tahun_anggaran']
-        ),
+		array(
+			'key'   => '_crb_pbb_tahun_anggaran',
+			'value' => $input['tahun_anggaran']
+		),
 		'relation' => 'AND'
-    ),
-    'post_status' => 'private',
-    'meta_key'  => '_crb_pbb_nop',
-    'orderby'   => 'meta_value_num',
-    'order' => 'ASC'
+	),
+	'post_status' => 'private',
+	'meta_key'  => '_crb_pbb_nop',
+	'orderby'   => 'meta_value_num',
+	'order' => 'ASC'
 ));
+
 $total_pajak = 0;
 $total_belum_bayar = 0;
 $total_diterima_petugas_pajak = 0;
