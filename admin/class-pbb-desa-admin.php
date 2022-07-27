@@ -145,17 +145,20 @@ class Pbb_Desa_Admin {
 
 		$tahun = get_option('_crb_pbb_tahun_anggaran'); 
 		$desa = get_option('_crb_pbb_desa'); 
-		$title = 'PBB Desa '.$desa.' tahun '.$tahun;
+		$laporan_pbb = 'PBB Desa '.$desa.' tahun '.$tahun;
 		$content = '[monitor_all_pajak tahun_anggaran="'.$tahun.'"]';
 
-		$link_monev = $this->generatePage($title, $content);
+		$link_monev = $this->generatePage($laporan_pbb, $content);
 
 		$basic_options_container = Container::make( 'theme_options', __( 'PBB Options' ) )
 			->set_page_menu_position( 4 )
 	        ->add_fields( array(
 				Field::make( 'html', 'crb_monev' )
 		        	->set_html( '
-		        		<a href="'.$link_monev.'" target="_blank">Laporan PBB Desa</a>
+					<b>HALAMAN TERKAIT</b>
+	            	<ul>
+	            		<li>Laporan PBB Desa: <a target="_blank" href="'.$link_monev.'">'.$laporan_pbb.'</a></li>
+	            	</ul>
 		        	' ),
 	            Field::make( 'text', 'crb_pbb_tahun_anggaran', 'Tahun Anggaran' )
 	            	->set_default_value('2021')
