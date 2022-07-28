@@ -171,7 +171,7 @@ class Pbb_Desa_Public {
 
 		if ($user_role[0] == 'pengawas_pajak') {
 			$nama_page = 'Manajemen Pajak Desa Pengawas';
-			$url_page = $this->generatePage($nama_page, '[manajemen_pbb_pengawas]');
+			$url_page = $this->function->generatePage($nama_page, '[manajemen_pbb_pengawas]');
 			echo '
 				<ul class="pbb-desa-manajemen">
 					<li><a href="'.$url_page.'" target="_blank" class="btn btn-info">'.$nama_page.'</a></li><br>
@@ -189,7 +189,7 @@ class Pbb_Desa_Public {
 			';
 		}else {
 			$nama_page = 'Manajemen Pajak Desa';
-			$url_page = $this->generatePage($nama_page, '[manajemen_pbb]');
+			$url_page = $this->function->generatePage($nama_page, '[manajemen_pbb]');
 			echo '
 				<ul class="pbb-desa-manajemen">
 					<li><a href="'.$url_page.'" target="_blank" class="btn btn-info">'.$nama_page.'</a></li>
@@ -205,20 +205,6 @@ class Pbb_Desa_Public {
 				</style>
 			';
 		}
-	}
-
-	public function get_link_post($custom_post){
-		$link = get_permalink($custom_post);
-		$options = array();
-		if(!empty($custom_post->custom_url)){
-			$options['custom_url'] = $custom_post->custom_url;
-		}
-		if(strpos($link, '?') === false){
-			$link .= '?key=' . $this->gen_key(false, $options);
-		}else{
-			$link .= '&key=' . $this->gen_key(false, $options);
-		}
-		return $link;
 	}
 
 	public function data_status_bayar($option = array('type' => false), $role=''){
@@ -276,67 +262,104 @@ class Pbb_Desa_Public {
 			  </script>';
 	 }
 
-	public function decode_key($value){
-		$key = base64_decode($value);
-		$key_db = md5(get_option( '_crb_pbb_api_key' ));
-		$key = explode($key_db, $key);
-		$get = array();
-		if(!empty($key[2])){
-			$all_get = explode('&', $key[2]);
-			foreach ($all_get as $k => $v) {
-				$current_get = explode('=', $v);
-				$get[$current_get[0]] = $current_get[1];
-			}
-		}
-		return $get;
-	}
+	public function get_data_pajak_datatable(){
+		global $wpdb;
+		$params = $_REQUEST;
+		$colums_sort = $params['columns'][$params['order'][0]['column']]['data'];
+		$colums_sort_order = $params['order'][0]['dir'];
 
-	function gen_key($key_db = false, $options = array()){
-		$now = time()*1000;
-		if(empty($key_db)){
-			$key_db = md5(get_option( '_crb_pbb_api_key' ));
-		}
-		$tambahan_url = '';
-		if(!empty($options['custom_url'])){
-			$custom_url = array();
-			foreach ($options['custom_url'] as $k => $v) {
-				$custom_url[] = $v['key'].'='.$v['value'];
-			}
-			$tambahan_url = $key_db.implode('&', $custom_url);
-		}
-		$key = base64_encode($now.$key_db.$now.$tambahan_url);
-		return $key;
-	}
+		$filter_query = array(
+	        array(
+	            'key'   => '_crb_pbb_tahun_anggaran',
+	            'value' => $params['tahun_anggaran']
+	        )
+	    );
+	    if(!empty($params['petugas_pajak'])){
+	    	$filter_query[] = array(
+	            'key'   => '_crb_pbb_petugas_pajak',
+	            'value' => $params['petugas_pajak'],
+	        );
+	    }
 
-	public function generatePage($nama_page, $content = false, $update = false){
-		$custom_post = get_page_by_title($nama_page, OBJECT, 'page');
+		// check search value exist
+		if( !empty($params['search']['value']) ) {
+	    	$filter_query[] = array(
+	    		'relation' => 'OR',
+	    		array(
+		            'key'   => '_crb_pbb_nama_wp',
+		            'value' => $params['search']['value'],
+		            'compare' => 'LIKE'
+		        ),
+		        array(
+		            'key'   => '_crb_pbb_nop',
+		            'value' => $params['search']['value'],
+		            'compare' => 'LIKE'
+		        )
+		    );
+		}
 
-		$_post = array(
-			'post_title'	=> $nama_page,
-			'post_content'	=> $content,
-			'post_type'		=> 'page',
-			'post_status'	=> 'private',
-			'comment_status'	=> 'closed'
+		$opsi = array( 
+			'numberposts'	=> -1,
+			'post_type' => 'wajib_pajak', 
+			'meta_query' => $filter_query,
+		    'post_status' => 'private',
+		    'meta_key'  => '_crb_pbb_nop',
+		    'orderby'   => 'meta_value_num',
+		    'order' => 'ASC'
 		);
-		if (empty($custom_post) || empty($custom_post->ID)) {
-			$id = wp_insert_post($_post);
-			$_post['insert'] = 1;
-			$_post['ID'] = $id;
-			$custom_post = get_page_by_title($nama_page, OBJECT, 'page');
-			update_post_meta($custom_post->ID, 'ast-breadcrumbs-content', 'disabled');
-			update_post_meta($custom_post->ID, 'ast-featured-img', 'disabled');
-			update_post_meta($custom_post->ID, 'ast-main-header-display', 'disabled');
-			update_post_meta($custom_post->ID, 'footer-sml-layout', 'disabled');
-			update_post_meta($custom_post->ID, 'site-content-layout', 'page-builder');
-			update_post_meta($custom_post->ID, 'site-post-title', 'disabled');
-			update_post_meta($custom_post->ID, 'site-sidebar-layout', 'no-sidebar');
-			update_post_meta($custom_post->ID, 'theme-transparent-header-meta', 'disabled');
-		}else if($update){
-			$_post['ID'] = $custom_post->ID;
-			wp_update_post( $_post );
-			$_post['update'] = 1;
+		if(!empty($colums_sort)){
+			$opsi['meta_key'] = '_'.$colums_sort;
+			$opsi['order'] = $colums_sort_order;
+			if($colums_sort == 'crb_pbb_nama_wp'){
+				$opsi['orderby'] = 'meta_value';
+			}
 		}
-		return $this->get_link_post($custom_post);
-	}
+		$posts_all = get_posts($opsi);
 
+		$opsi['numberposts'] = $params['length'];
+		$opsi['offset'] = $params['start'];
+		$opsi['meta_query'] = $filter_query;
+
+		$posts = get_posts($opsi);
+		$queryRecords = array();
+
+		foreach ( $posts as $post ) {
+			$nilai = get_post_meta( $post->ID, '_crb_pbb_ketetapan_pbb', true );
+			if(empty($nilai)){
+				$nilai = 0;
+			}
+			$status = get_post_meta( $post->ID, '_crb_pbb_status_bayar', true );
+			if(empty($status)){
+				$status = 0;
+			}
+			$status_bayar = $this->data_status_bayar();
+    		$status_bayar_wp = $status_bayar[$status];
+			$nop = get_post_meta( $post->ID, '_crb_pbb_nop', true );
+			$nama_wp = get_post_meta( $post->ID, '_crb_pbb_nama_wp', true );
+			$user_id = get_post_meta( $post->ID, '_crb_pbb_petugas_pajak', true );
+
+			$user_info = get_userdata($user_id);
+			$nama_petugas = $user_info->display_name;
+			$queryRecords[] = array(
+				'post_id' => $post->ID,
+				'crb_pbb_nop'	=> $nop,
+				'crb_pbb_nama_wp'	=> $nama_wp,
+				'crb_pbb_alamat_op'	=> get_post_meta( $post->ID, '_crb_pbb_alamat_op', true ),
+				'crb_pbb_status_bayar'	=> $status_bayar_wp,
+				'crb_pbb_ketetapan_pbb'	=> number_format($nilai,0,",","."),
+				'crb_pbb_tgl'	=> get_post_meta( $post->ID, '_crb_pbb_tgl_bayar', true ),
+				'crb_pbb_url'	=> get_permalink( $post ),
+				'crb_display_name'	=> $nama_petugas
+			);
+	    }
+
+	    $json_data = array(
+			"draw"            => intval( $params['draw'] ),   
+			"recordsTotal"    => count($posts_all),  
+			"recordsFiltered" => count($posts_all),
+			"data"            => $queryRecords
+		);
+
+		die(json_encode($json_data));
+	}
 }

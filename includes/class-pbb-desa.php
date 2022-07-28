@@ -190,6 +190,7 @@ class Pbb_Desa {
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 		$this->loader->add_action('wp_head',  $plugin_public, 'myplugin_ajaxurl');
+		$this->loader->add_action('wp_ajax_get_data_pajak_datatable',  $plugin_public, 'get_data_pajak_datatable');
 		add_shortcode('tampilpbb', array($plugin_public, 'tampilpbb'));
 		add_shortcode('monitor_all_pajak', array($plugin_public, 'monitor_all_pajak'));
 		add_shortcode('monitor_all_pajak_pengawas', array($plugin_public, 'monitor_all_pajak_pengawas'));
