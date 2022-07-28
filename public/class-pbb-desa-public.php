@@ -126,6 +126,15 @@ class Pbb_Desa_Public {
 		}
 		require_once plugin_dir_path(dirname(__FILE__)) . 'public/partials/pbb-desa-monev-all.php';
 	}
+	
+	public function monitor_all_pajak_pengawas($atts)
+	{
+		// untuk disable render shortcode di halaman edit page/post
+		if(!empty($_GET) && !empty($_GET['post'])){
+			return '';
+		}
+		require_once plugin_dir_path(dirname(__FILE__)) . 'public/partials/pbb-desa-monev-all-pengawas.php';
+	}
 
 	public function manajemen_pbb($atts)
 	{
@@ -153,13 +162,20 @@ class Pbb_Desa_Public {
 		$user_id = get_current_user_id();
 		$user_meta = get_userdata($user_id);
 		$user_role = $user_meta->roles;
+		$tahun = get_option('_crb_pbb_tahun_anggaran'); 
+		$desa = get_option('_crb_pbb_desa'); 
+		$laporan_pbb = 'Pengawas PBB Desa '.$desa.' tahun '.$tahun;
+		$content = '[monitor_all_pajak_pengawas tahun_anggaran="'.$tahun.'"]';
+
+		$link_monev = $this->generatePage($laporan_pbb, $content);
 
 		if ($user_role[0] == 'pengawas_pajak') {
 			$nama_page = 'Manajemen Pajak Desa Pengawas';
 			$url_page = $this->generatePage($nama_page, '[manajemen_pbb_pengawas]');
 			echo '
 				<ul class="pbb-desa-manajemen">
-					<li><a href="'.$url_page.'" target="_blank" class="btn btn-info">'.$nama_page.'</a></li>
+					<li><a href="'.$url_page.'" target="_blank" class="btn btn-info">'.$nama_page.'</a></li><br>
+					<li><a target="_blank" class="btn btn-info" href="'.$link_monev.'">'.$laporan_pbb.'</a></li>
 				</ul>
 				<style>
 					.pbb-desa-manajemen{
