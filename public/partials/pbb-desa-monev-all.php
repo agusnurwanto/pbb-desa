@@ -174,7 +174,7 @@ foreach ($users as $key => $user):
 ?>
 
 <div style="padding: 10px;">
-	<h1 style='text-align: center;'>Laporan PBB Desa Tahun <?php echo $input['tahun_anggaran']; ?> Petugas <?php $user->display_name ?></h1>
+	<h1 style='text-align: center;'>Laporan PBB Desa Tahun <?php echo $input['tahun_anggaran']; ?> Petugas <?php echo $user->display_name ?></h1>
     <table id="table-laporan-pbb-desa" class="table table-bordered" cellspacing="0" width="100%">
         <thead>
             <tr>
