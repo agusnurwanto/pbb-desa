@@ -318,4 +318,8 @@ class Pbb_Desa_Functions
 			return $data;
 		}
 	}
+
+	function isInteger($input){
+	    return(ctype_digit(strval($input)));
+	}
 }

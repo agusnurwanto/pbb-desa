@@ -172,6 +172,7 @@ class Pbb_Desa_Public {
 				.pbb-desa-manajemen li {
 					list-style: none;
 					display: inline-block;
+					margin: 5px;
 				}
 			</style>
 			<ul class="pbb-desa-manajemen">
@@ -179,12 +180,12 @@ class Pbb_Desa_Public {
 
 	    if($this->functions->user_has_role($user_id, 'pengawas_pajak')){
 			$rekap_detail = $this->functions->generatePage(array(
-				'nama_page' => 'Laporan detail PBB desa '.$desa, 
+				'nama_page' => 'Laporan detail PBB '.$desa, 
 				'content' => '[manajemen_pbb_pengawas]'
 			));
 			
 			$rekap_all = $this->functions->generatePage(array(
-				'nama_page' => 'Laporan rekapitulasi PBB desa '.$desa.' tahun '.$tahun, 
+				'nama_page' => 'Laporan rekapitulasi PBB '.$desa.' tahun '.$tahun, 
 				'content' => '[monitor_all_pajak_pengawas tahun_anggaran="'.$tahun.'"]'
 			));
 			echo '
@@ -193,7 +194,7 @@ class Pbb_Desa_Public {
 			';
 		}else {
 			$rekap_all = $this->functions->generatePage(array(
-				'nama_page' => 'Laporan rekapitulasi PBB desa '.$desa, 
+				'nama_page' => 'Manajemen data PBB '.$desa, 
 				'content' => '[manajemen_pbb]'
 			));
 			echo '

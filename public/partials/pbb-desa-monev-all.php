@@ -28,7 +28,7 @@ $total_diterima_kecamatan = 0;
 $total_lunas = 0;
 foreach ($posts as $k => $post) {
 	$nilai = get_post_meta( $post->ID, '_crb_pbb_ketetapan_pbb', true );
-	if(empty($nilai)){
+	if(empty($nilai) || !$this->functions->isInteger($nilai)){
 		$nilai = 0;
 	}
 	$status = get_post_meta( $post->ID, '_crb_pbb_status_bayar', true );
