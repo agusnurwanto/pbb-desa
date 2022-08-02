@@ -114,8 +114,8 @@ $args = array(
     'order'   => 'ASC'
 );
 $users = get_users( $args );
-$filter_query = array();
 foreach ($users as $key => $user):
+	$filter_query = array();
 	$filter_query[] = array(
 		'key'   => '_crb_pbb_petugas_pajak',
 		'value' => $user->ID,
