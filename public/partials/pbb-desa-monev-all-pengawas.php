@@ -104,12 +104,6 @@ $args = array(
     'order'   => 'ASC'
 );
 $users = get_users( $args );
-$total_pajak_petugas=0;
-$total_belum_bayar_petugas=0;
-$total_diterima_petugas_pajak_petugas=0;
-$total_diterima_bendahara_desa_petugas=0;
-$total_diterima_kecamatan_petugas=0;
-$total_lunas_petugas=0;
 foreach ($users as $key => $user):
 	$filter_query = array(array(
 		'key'   => '_crb_pbb_tahun_anggaran',
@@ -130,6 +124,12 @@ foreach ($users as $key => $user):
 		'order' => 'ASC'
 	));
 	$body_table_petugas ='';
+	$total_pajak_petugas=0;
+	$total_belum_bayar_petugas=0;
+	$total_diterima_petugas_pajak_petugas=0;
+	$total_diterima_bendahara_desa_petugas=0;
+	$total_diterima_kecamatan_petugas=0;
+	$total_lunas_petugas=0;
 	$no=1;
 	foreach ($posts_petugas as $key => $post) {
 		$nilai = get_post_meta( $post->ID, '_crb_pbb_ketetapan_pbb', true );
