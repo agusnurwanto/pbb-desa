@@ -30,7 +30,7 @@ $no=1;
 $body_table ='';
 foreach ($posts as $k => $post) {
 	$nilai = get_post_meta( $post->ID, '_crb_pbb_ketetapan_pbb', true );
-	if(empty($nilai)){
+	if(empty($nilai) || !$this->functions->isInteger($nilai)){
 		$nilai = 0;
 	}
 	$status = get_post_meta( $post->ID, '_crb_pbb_status_bayar', true );
@@ -110,6 +110,7 @@ $total_diterima_petugas_pajak_petugas=0;
 $total_diterima_bendahara_desa_petugas=0;
 $total_diterima_kecamatan_petugas=0;
 $total_lunas_petugas=0;
+$filter_query = array();
 foreach ($users as $key => $user):
 	$filter_query[] = array(
 		'key'   => '_crb_pbb_petugas_pajak',
@@ -129,7 +130,7 @@ foreach ($users as $key => $user):
 	$no=1;
 	foreach ($posts_petugas as $key => $post) {
 		$nilai = get_post_meta( $post->ID, '_crb_pbb_ketetapan_pbb', true );
-		if(empty($nilai)){
+		if(empty($nilai) || !$this->functions->isInteger($nilai)){
 			$nilai = 0;
 		}
 		$status = get_post_meta( $post->ID, '_crb_pbb_status_bayar', true );
@@ -152,7 +153,7 @@ foreach ($users as $key => $user):
 
 	$body_table_petugas .= '
 		<tr>
-			<td style="text-align: center;">'.count($posts).' WP</td>
+			<td style="text-align: center;">'.count($posts_petugas).' WP</td>
 			<td style="text-align: center;" >Rp '.number_format($total_pajak_petugas,0,",",".").'</td>
 			<td style="text-align: center;">Rp '.number_format($total_belum_bayar_petugas,0,",",".").'</td>
 			<td style="text-align: center;">Rp '.number_format($total_lunas_petugas,0,",",".").'</td>

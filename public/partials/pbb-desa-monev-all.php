@@ -114,6 +114,7 @@ $args = array(
     'order'   => 'ASC'
 );
 $users = get_users( $args );
+$filter_query = array();
 foreach ($users as $key => $user):
 	$filter_query[] = array(
 		'key'   => '_crb_pbb_petugas_pajak',
@@ -139,7 +140,7 @@ foreach ($users as $key => $user):
 	$no=1;
 	foreach ($posts_petugas as $key => $post) {
 		$nilai = get_post_meta( $post->ID, '_crb_pbb_ketetapan_pbb', true );
-		if(empty($nilai)){
+		if(empty($nilai) || !$this->functions->isInteger($nilai)){
 			$nilai = 0;
 		}
 		$status = get_post_meta( $post->ID, '_crb_pbb_status_bayar', true );
@@ -163,7 +164,7 @@ foreach ($users as $key => $user):
 
 	$body_table_petugas .= '
 		<tr>
-			<td style="text-align: center;">'.count($posts).' WP</td>
+			<td style="text-align: center;">'.count($posts_petugas).' WP</td>
 			<td style="text-align: center;" >Rp '.number_format($total_pajak_petugas,0,",",".").'</td>
 			<td style="text-align: center;">Rp '.number_format($total_belum_bayar_petugas,0,",",".").'</td>
 			<td style="text-align: center;">Rp '.number_format($total_diterima_petugas_pajak_petugas,0,",",".").'</td>
