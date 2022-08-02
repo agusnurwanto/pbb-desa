@@ -111,10 +111,10 @@ $total_diterima_bendahara_desa_petugas=0;
 $total_diterima_kecamatan_petugas=0;
 $total_lunas_petugas=0;
 foreach ($users as $key => $user):
-	$filter_query = array(
+	$filter_query = array(array(
 		'key'   => '_crb_pbb_tahun_anggaran',
 		'value' => $input['tahun_anggaran']
-	);
+	));
 	$filter_query[] = array(
 		'key'   => '_crb_pbb_petugas_pajak',
 		'value' => $user->ID,
