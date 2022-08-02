@@ -161,50 +161,46 @@ class Pbb_Desa_Public {
 
 		$user_id = get_current_user_id();
 		$user_meta = get_userdata($user_id);
-		$user_role = $user_meta->roles;
 		$tahun = get_option('_crb_pbb_tahun_anggaran'); 
-		$desa = get_option('_crb_pbb_desa'); 
-		$laporan_pbb = 'Pengawas PBB Desa '.$desa.' tahun '.$tahun;
-		$content = '[monitor_all_pajak_pengawas tahun_anggaran="'.$tahun.'"]';
+		$desa = get_option('_crb_pbb_desa');
+		echo '
+			<style>
+				.pbb-desa-manajemen{
+					margin: 0;
+					text-align: center;
+				}
+				.pbb-desa-manajemen li {
+					list-style: none;
+					display: inline-block;
+				}
+			</style>
+			<ul class="pbb-desa-manajemen">
+		';
 
-		$link_monev = $this->generatePage($laporan_pbb, $content);
-
-		if ($user_role[0] == 'pengawas_pajak') {
-			$nama_page = 'Manajemen Pajak Desa Pengawas';
-			$url_page = $this->generatePage($nama_page, '[manajemen_pbb_pengawas]');
+	    if($this->functions->user_has_role($user_id, 'pengawas_pajak')){
+			$rekap_detail = $this->functions->generatePage(array(
+				'nama_page' => 'Laporan detail PBB desa '.$desa, 
+				'content' => '[manajemen_pbb_pengawas]'
+			));
+			
+			$rekap_all = $this->functions->generatePage(array(
+				'nama_page' => 'Laporan rekapitulasi PBB desa '.$desa.' tahun '.$tahun, 
+				'content' => '[monitor_all_pajak_pengawas tahun_anggaran="'.$tahun.'"]'
+			));
 			echo '
-				<ul class="pbb-desa-manajemen">
-					<li><a href="'.$url_page.'" target="_blank" class="btn btn-info">'.$nama_page.'</a></li><br>
-					<li><a target="_blank" class="btn btn-info" href="'.$link_monev.'">'.$laporan_pbb.'</a></li>
-				</ul>
-				<style>
-					.pbb-desa-manajemen{
-						margin: 0;
-					}
-					.pbb-desa-manajemen li {
-						list-style: none;
-						text-align: center;
-					}
-				</style>
+				<li><a href="'.$rekap_detail['url'].'" target="_blank" class="btn btn-info">'.$rekap_detail['title'].'</a></li>
+				<li><a target="_blank" class="btn btn-success" href="'.$rekap_all['url'].'">'.$rekap_all['title'].'</a></li>
 			';
 		}else {
-			$nama_page = 'Manajemen Pajak Desa';
-			$url_page = $this->generatePage($nama_page, '[manajemen_pbb]');
+			$rekap_all = $this->functions->generatePage(array(
+				'nama_page' => 'Laporan rekapitulasi PBB desa '.$desa, 
+				'content' => '[manajemen_pbb]'
+			));
 			echo '
-				<ul class="pbb-desa-manajemen">
-					<li><a href="'.$url_page.'" target="_blank" class="btn btn-info">'.$nama_page.'</a></li>
-				</ul>
-				<style>
-					.pbb-desa-manajemen{
-						margin: 0;
-					}
-					.pbb-desa-manajemen li {
-						list-style: none;
-						text-align: center;
-					}
-				</style>
+				<li><a href="'.$rekap_all['url'].'" target="_blank" class="btn btn-info">'.$rekap_all['detail'].'</a></li>
 			';
 		}
+		echo '</ul>';
 	}
 
 	public function data_status_bayar($option = array('type' => false), $role=''){
@@ -264,6 +260,11 @@ class Pbb_Desa_Public {
 
 	public function get_data_pajak_datatable(){
 		global $wpdb;
+		$pengawas = false;
+		$user_id = get_current_user_id();
+	    if($this->functions->user_has_role($user_id, 'pengawas_pajak')){
+			$pengawas = true;
+	    }
 		$params = $_REQUEST;
 		$colums_sort = $params['columns'][$params['order'][0]['column']]['data'];
 		$colums_sort_order = $params['order'][0]['dir'];
@@ -278,6 +279,12 @@ class Pbb_Desa_Public {
 	    	$filter_query[] = array(
 	            'key'   => '_crb_pbb_petugas_pajak',
 	            'value' => $params['petugas_pajak'],
+	        );
+	    }
+	    if(!empty($params['status_bayar'])){
+	    	$filter_query[] = array(
+	            'key'   => '_crb_pbb_status_bayar',
+	            'value' => $params['status_bayar'],
 	        );
 	    }
 
@@ -329,7 +336,17 @@ class Pbb_Desa_Public {
 				$nilai = 0;
 			}
 			$status = get_post_meta( $post->ID, '_crb_pbb_status_bayar', true );
-			if(empty($status)){
+			if(
+				empty($status)
+				|| (
+					true == $pengawas 
+					&& (
+						$status == 1
+						|| $status == 2
+						|| $status == 3
+					)
+				)
+			){
 				$status = 0;
 			}
 			$status_bayar = $this->data_status_bayar();
@@ -361,67 +378,5 @@ class Pbb_Desa_Public {
 		);
 
 		die(json_encode($json_data));
-	}
-
-	public function generatePage($nama_page, $content = false, $update = false){
-		$custom_post = get_page_by_title($nama_page, OBJECT, 'page');
-
-		$_post = array(
-			'post_title'	=> $nama_page,
-			'post_content'	=> $content,
-			'post_type'		=> 'page',
-			'post_status'	=> 'private',
-			'comment_status'	=> 'closed'
-		);
-		if (empty($custom_post) || empty($custom_post->ID)) {
-			$id = wp_insert_post($_post);
-			$_post['insert'] = 1;
-			$_post['ID'] = $id;
-			$custom_post = get_page_by_title($nama_page, OBJECT, 'page');
-			update_post_meta($custom_post->ID, 'ast-breadcrumbs-content', 'disabled');
-			update_post_meta($custom_post->ID, 'ast-featured-img', 'disabled');
-			update_post_meta($custom_post->ID, 'ast-main-header-display', 'disabled');
-			update_post_meta($custom_post->ID, 'footer-sml-layout', 'disabled');
-			update_post_meta($custom_post->ID, 'site-content-layout', 'page-builder');
-			update_post_meta($custom_post->ID, 'site-post-title', 'disabled');
-			update_post_meta($custom_post->ID, 'site-sidebar-layout', 'no-sidebar');
-			update_post_meta($custom_post->ID, 'theme-transparent-header-meta', 'disabled');
-		}else if($update){
-			$_post['ID'] = $custom_post->ID;
-			wp_update_post( $_post );
-			$_post['update'] = 1;
-		}
-		return $this->get_link_post($custom_post);
-	}
-
-	public function get_link_post($custom_post){
-		$link = get_permalink($custom_post);
-		$options = array();
-		if(!empty($custom_post->custom_url)){
-			$options['custom_url'] = $custom_post->custom_url;
-		}
-		if(strpos($link, '?') === false){
-			$link .= '?key=' . $this->gen_key(false, $options);
-		}else{
-			$link .= '&key=' . $this->gen_key(false, $options);
-		}
-		return $link;
-	}
-
-	function gen_key($key_db = false, $options = array()){
-		$now = time()*1000;
-		if(empty($key_db)){
-			$key_db = md5(get_option( '_crb_pbb_api_key' ));
-		}
-		$tambahan_url = '';
-		if(!empty($options['custom_url'])){
-			$custom_url = array();
-			foreach ($options['custom_url'] as $k => $v) {
-				$custom_url[] = $v['key'].'='.$v['value'];
-			}
-			$tambahan_url = $key_db.implode('&', $custom_url);
-		}
-		$key = base64_encode($now.$key_db.$now.$tambahan_url);
-		return $key;
 	}
 }

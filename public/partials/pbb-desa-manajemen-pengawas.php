@@ -64,21 +64,17 @@ $newDatashets = array();
     <input type="number" id="tahun_anggaran" value="<?php echo date('Y') ?>">
     <label>Pilih Petugas Pajak : </label>
     <select id="petugas_pajak" style="min-width: 250"><?php echo $list_html ?></select>
+    <label>Filter Status Bayar : </label>
+    <select id="status_bayar" style="min-width: 250px; margin-right: 20px;">
+        <?php echo $this->data_status_bayar(array('type' => 'html'), $user_role[0]); ?>
+    </select>
 </div>
 <div style="padding: 10px;">
     <div style="margin-bottom: 20px;">
         <div style="width: 100%; padding: 10px; max-width: 1000px; max-height: 1000px; margin: auto; margin-bottom: 25px; display: none;">
             <canvas id="myChart"></canvas>
         </div>
-        <div class="form-group row" style="padding: 10px; padding-left: 10px;">
-            <div>
-                <input type="hidden" id="petugas_pajak" name="petugas_pajak" value="<?php echo $user_id ?>">
-                <label>Filter Status Bayar : </label>
-                <select id="status_bayar" style="min-width: 250px; margin-right: 20px;">
-                    <?php echo $this->data_status_bayar(array('type' => 'html'), $user_role[0]); ?>
-                </select>
-            </div>
-        </div>
+        <input type="hidden" id="petugas_pajak" name="petugas_pajak" value="<?php echo $user_id ?>">
     </div>
     <table id="user-table-pembayaran-pbb" class="table table-bordered" cellspacing="0" width="100%">
         <thead>
@@ -108,30 +104,18 @@ $newDatashets = array();
 
 
 jQuery(document).ready(function() {
-    var loading = ''
-        +'<div id="wrap-loading">'
-            +'<div class="lds-hourglass"></div>'
-            +'<div id="persen-loading"></div>'
-        +'</div>';
-    if(jQuery('#wrap-loading').length == 0){
-        jQuery('body').prepend(loading);
-    }
-
-    var tahun_anggaran = jQuery('#tahun_anggaran').val();
-    var petugas_pajak = jQuery('#petugas_pajak').val();
-    var status_bayar = jQuery('#status_bayar').val();
-
-    var table = jQuery('#user-table-pembayaran-pbb').DataTable({
+    window.table = jQuery('#user-table-pembayaran-pbb').DataTable({
         "processing": true,
         "serverSide": true,
         "ajax": {
             url: ajaxurl,
             type:"post",
-            data:{
-                'action' : "get_data_pajak_datatable",
-                tahun_anggaran: tahun_anggaran,
-                petugas_pajak: petugas_pajak,
-                status_bayar: status_bayar,
+            data: function (d) {
+                d.action = "get_data_pajak_datatable";
+                d.tahun_anggaran = jQuery('#tahun_anggaran').val();
+                d.petugas_pajak = jQuery('#petugas_pajak').val();
+                d.status_bayar = jQuery('#status_bayar').val();
+                return d;
             }
         },
         "columns": [
@@ -218,21 +202,16 @@ jQuery(document).ready(function() {
                 pieChart2.update();
             }
         }
-
-        
     });
 
     jQuery('#petugas_pajak').on('change', function(){
-        get_wajib_pajak();
+        table.ajax.reload();
     });
-
+    jQuery('#tahun_anggaran').on('change', function(){
+        table.ajax.reload();
+    });
     jQuery('#status_bayar').on('change', function(){
-        petugas_pajak = jQuery('#petugas_pajak').val();
-        if (petugas_pajak) {
-            get_wajib_pajak();
-        }else {
-            alert('Pilih petugas');
-        }
+        table.ajax.reload();
     });
 });
 

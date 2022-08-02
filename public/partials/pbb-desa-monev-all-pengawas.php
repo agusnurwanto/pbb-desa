@@ -38,31 +38,25 @@ foreach ($posts as $k => $post) {
 		$status = 0;
 	}
 	$total_pajak += $nilai;
-	if($status == 0){
+	if(
+		$status == 0
+		|| $status == 1
+		|| $status == 2
+		|| $status == 3
+	){
 		$total_belum_bayar += $nilai;
-	}else if($status == 1){
-		$total_diterima_petugas_pajak += $nilai;
-	}else if($status == 2){
-		$total_diterima_bendahara_desa += $nilai;
-	}else if($status == 3){
-		$total_diterima_kecamatan += $nilai;
 	}else if($status == 4){
 		$total_lunas += $nilai;
 	}
 }
 
 $body_table .= '
-		<tr>
-			<td style="text-align: center;">'.$no++.'</td>
-			<td style="text-align: center;">'.count($posts).'</td>
-			<td style="text-align: center;" >Rp '.number_format($total_pajak,0,",",".").'</td>
-			<td style="text-align: center;">Rp '.number_format($total_belum_bayar,0,",",".").'</td>
-			<td style="text-align: center;">Rp '.number_format($total_diterima_petugas_pajak,0,",",".").'</td>
-			<td style="text-align: center;">Rp '.number_format($total_diterima_bendahara_desa,0,",",".").'</td>
-			<td style="text-align: center;">Rp '.number_format($total_diterima_kecamatan,0,",",".").'</td>
-			<td style="text-align: center;">Rp '.number_format($total_lunas,0,",",".").'</td>
-		</tr>
-	
+	<tr>
+		<td style="text-align: center;">'.count($posts).' WP</td>
+		<td style="text-align: center;" >Rp '.number_format($total_pajak,0,",",".").'</td>
+		<td style="text-align: center;">Rp '.number_format($total_belum_bayar,0,",",".").'</td>
+		<td style="text-align: center;">Rp '.number_format($total_lunas,0,",",".").'</td>
+	</tr>
 ';
 
 ?>
@@ -90,14 +84,10 @@ $body_table .= '
     <table id="table-laporan-pbb-desa" class="table table-bordered" cellspacing="0" width="100%">
         <thead>
             <tr>
-                <th style="width: 45px;">No</th>
-                <th style="width: 170px;">Jumlah Wajib Pajak</th>
-                <th style="width: 170px;">Total Pajak</th>
-                <th style="width: 170px;">Belum Bayar</th>
-                <th style="width: 100px;">Diterima Petugas Pajak</th>
-                <th style="width: 125px;">Diterima Bendahara Desa</th>
-                <th style="width: 125px;">Diterima Kecamatan</th>
-                <th style="width: 125px;">Lunas</th>
+                <th class="text-center" style="width: 170px;">Jumlah Wajib Pajak</th>
+                <th class="text-center" style="width: 170px;">Total Pajak</th>
+                <th class="text-center" style="width: 170px;">Belum Bayar</th>
+                <th class="text-center" style="width: 125px;">Lunas</th>
             </tr>
         </thead>
         <tbody>
@@ -147,14 +137,13 @@ foreach ($users as $key => $user):
 			$status = 0;
 		}
 		$total_pajak_petugas += $nilai;
-		if($status == 0){
+		if(
+			$status == 0
+			|| $status == 1
+			|| $status == 2
+			|| $status == 3
+		){
 			$total_belum_bayar_petugas += $nilai;
-		}else if($status == 1){
-			$total_diterima_petugas_pajak_petugas += $nilai;
-		}else if($status == 2){
-			$total_diterima_bendahara_desa_petugas += $nilai;
-		}else if($status == 3){
-			$total_diterima_kecamatan_petugas += $nilai;
 		}else if($status == 4){
 			$total_lunas_petugas += $nilai;
 		}
@@ -163,45 +152,29 @@ foreach ($users as $key => $user):
 
 	$body_table_petugas .= '
 		<tr>
-			<td style="text-align: center;">'.$no++.'</td>
-			<td style="text-align: center;">'.count($posts).'</td>
+			<td style="text-align: center;">'.count($posts).' WP</td>
 			<td style="text-align: center;" >Rp '.number_format($total_pajak_petugas,0,",",".").'</td>
 			<td style="text-align: center;">Rp '.number_format($total_belum_bayar_petugas,0,",",".").'</td>
-			<td style="text-align: center;">Rp '.number_format($total_diterima_petugas_pajak_petugas,0,",",".").'</td>
-			<td style="text-align: center;">Rp '.number_format($total_diterima_bendahara_desa_petugas,0,",",".").'</td>
-			<td style="text-align: center;">Rp '.number_format($total_diterima_kecamatan_petugas,0,",",".").'</td>
 			<td style="text-align: center;">Rp '.number_format($total_lunas_petugas,0,",",".").'</td>
 		</tr>
 	';
 ?>
 
-<div style="padding: 10px;">
-	<h1 style='text-align: center;'>Laporan PBB Desa Tahun <?php echo $input['tahun_anggaran']; ?> Petugas <?php $user->display_name ?></h1>
-    <table id="table-laporan-pbb-desa" class="table table-bordered" cellspacing="0" width="100%">
-        <thead>
-            <tr>
-                <th style="width: 45px;">No</th>
-                <th style="width: 170px;">Jumlah Wajib Pajak</th>
-                <th style="width: 170px;">Total Pajak</th>
-                <th style="width: 170px;">Belum Bayar</th>
-                <th style="width: 100px;">Diterima Petugas Pajak</th>
-                <th style="width: 125px;">Diterima Bendahara Desa</th>
-                <th style="width: 125px;">Diterima Kecamatan</th>
-                <th style="width: 125px;">Lunas</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php echo $body_table_petugas ?>
-        </tbody>
-    </table>
-</div>
+	<div style="padding: 10px;">
+		<h1 style='text-align: center;'>Laporan PBB <?php echo ucwords(get_option('_crb_pbb_desa')) ?> Tahun <?php echo $input['tahun_anggaran']; ?> Petugas <?php echo $user->display_name; ?></h1>
+	    <table id="table-laporan-pbb-desa" class="table table-bordered" cellspacing="0" width="100%">
+	        <thead>
+	            <tr>
+	                <th class="text-center" style="width: 170px;">Jumlah Wajib Pajak</th>
+	                <th class="text-center" style="width: 170px;">Total Pajak</th>
+	                <th class="text-center" style="width: 170px;">Belum Bayar</th>
+	                <th class="text-center" style="width: 125px;">Lunas</th>
+	            </tr>
+	        </thead>
+	        <tbody>
+	            <?php echo $body_table_petugas ?>
+	        </tbody>
+	    </table>
+	</div>
 	
-
-<?php
-
-endforeach;
-
-
-?>
-
-
+<?php endforeach; ?>
